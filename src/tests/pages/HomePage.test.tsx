@@ -6,7 +6,7 @@ import { models } from '../../utility/options'
 
 global.TextEncoder = TextEncoder
 
-const mockAPIKey = 'api_keySample123784'
+const mockAPIKey = 'test_mock_api_key'
 
 describe('HomePage - Page components', () => {
     beforeAll(() => {
