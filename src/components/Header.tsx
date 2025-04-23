@@ -5,7 +5,7 @@ import '../styles/Components.sass'
 const Header: React.FC = () => {
     return (
         <div className="o-main-header">
-            <h1>GPT Recommender</h1>
+            <h1>Review Cruncher</h1>
             <p className="o-version-tag">v{pkg.version}</p>
         </div>
     )
