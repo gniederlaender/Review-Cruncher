@@ -11,8 +11,19 @@ const port = process.env.SERVERPORT || 5000;
 console.log('Server port:', port);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: '*', // Allow all origins
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 app.use(express.json());
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
+});
 
 const MAX_TOKENS = 600;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
