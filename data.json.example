@@ -1,0 +1,13 @@
+{
+  "reviews": [
+    {
+      "timestamp": "2025-04-23T19:46:14.906Z",
+      "product": "Test",
+      "email": "test@test.com",
+      "response": {
+        "responseMessage": "**Product Comparison: iPhone 13 Pro vs. Samsung Galaxy S23**\n\n**Advantages iPhone 13 Pro:**\n1. Excellent build quality and premium materials with a stainless steel frame.\n2. Superior ecosystem integration with other Apple devices (Mac, iPad, Apple Watch, AirPods).\n3. Strong camera system, especially for video recording with ProRes and Cinematic Mode.\n\n**Advantages Samsung Galaxy S23 (Best-in-Class Alternative):**\n1. Newer processor (Qualcomm Snapdragon 8 Gen 2), offering improved performance and efficiency.\n2. Higher display refresh rate (up to 120Hz), resulting in smoother user experience.\n3. More customization options and flexibility with Android operating system.\n\n**Price Comparison:**\n\niPhone 13 Pro is around **$750 (depending on storage and sales, new or refurbished)** and Samsung Galaxy S23 is around **$800**.\n\n**Recommendation:**\n\nIf you’re deeply invested in the Apple ecosystem or prioritize video recording, the iPhone 13 Pro remains a strong choice. However, the Samsung Galaxy S23 offers more modern hardware, greater customization, and likely longer software support, making it a better value overall in 2024.  \n\n**Verdict:** Unless you specifically want an iPhone, the Galaxy S23 is the preferred option for most users. For iOS fans, consider newer iPhone models like the iPhone 14/15 for greater longevity.",
+        "reason": "stop"
+      }
+    }
+  ]
+}
