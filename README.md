@@ -1,7 +1,7 @@
 # Review Cruncher
 
-Review Cruncher helps you to decide, which product to purchase.
-Before deciding to buy - Ask Review Cruncher.
+Review Cruncher helps you to decide, which product to purchase.<br/>
+Before deciding to buy - <b>Ask Review Cruncher</b>.
 Review Cruncher will provide you with a Recommendation, Alternatives and independent Product Reviews.
 
 A recommender system built with [Open AI API](https://openai.com/api/)
