@@ -5,7 +5,7 @@ import pkg from '../../../package.json'
 test('Header component - Renders correctly', () => {
     render(<Header />)
     const versionText = screen.getByText(`v${pkg.version}`)
-    const title = screen.getByText(/GPT Recommender/i)
+    const title = screen.getByText(/Review Cruncher/i)
 
     expect(versionText).toBeInTheDocument()
     expect(title).toBeInTheDocument()
