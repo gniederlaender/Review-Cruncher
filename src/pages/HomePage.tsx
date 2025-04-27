@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import Header from '../components/Header'
 import { sendCompletionRequest } from '../resources/api-request'
 import '../styles/HomePage.css'
 
@@ -54,7 +53,9 @@ const HomePage: React.FC = () => {
 
     return (
         <div className="o-page-container">
-            <Header />
+            <div className="o-claim-banner">
+                Before deciding to buy - <span>Ask Review Cruncher.</span>
+            </div>
             <div className="o-main-page-container">
                 <div className="u-input-row">
                     <p>Which product would you like to review?</p>
