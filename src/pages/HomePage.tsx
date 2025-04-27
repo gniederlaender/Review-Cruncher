@@ -84,11 +84,6 @@ const HomePage: React.FC = () => {
                         </button>
                         {isLoading && <span className="o-loading-text">... loading</span>}
                     </div>
-                    {finalResponse && (
-                        <button role="button" className="u-button o-ghost-button" onClick={() => navigator.clipboard.writeText(finalResponse)}>
-                            Copy
-                        </button>
-                    )}
                 </div>
                 {errorMessage && (
                     <p data-testid="errorTextContainer" className="o-error-text-container">
@@ -96,8 +91,13 @@ const HomePage: React.FC = () => {
                     </p>
                 )}
                 {finalResponse && (
-                    <div className="o-response-container">
-                        <ReactMarkdown>{finalResponse}</ReactMarkdown>
+                    <div className="o-response-wrapper">
+                        <button role="button" className="u-button o-copy-button" onClick={() => navigator.clipboard.writeText(finalResponse)}>
+                            Copy
+                        </button>
+                        <div className="o-response-container">
+                            <ReactMarkdown>{finalResponse}</ReactMarkdown>
+                        </div>
                     </div>
                 )}
                 {lengthIssueText && (

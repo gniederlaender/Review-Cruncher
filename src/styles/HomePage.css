@@ -29,17 +29,24 @@ body {
 
 /* Main container styles */
 .o-main-page-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 420px;
+    width: 90vw;
+    margin: 40px auto;
+    padding: 32px 24px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 /* Input row styles */
 .u-input-row {
-    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 1.2rem;
 }
 
 .u-input-row p {
@@ -50,17 +57,19 @@ body {
 }
 
 .o-product-input {
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 1rem;
-    border: 2px solid #e2e8f0;
+    padding: 14px 16px;
+    font-size: 1.08rem;
+    border: 1.5px solid #d1d5db;
     border-radius: 8px;
-    transition: border-color 0.2s ease;
-    outline: none;
+    transition: border 0.2s;
+    background: #f9fafb;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
 .o-product-input:focus {
-    border-color: #3498db;
+    border: 1.5px solid #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 2px #2563eb22;
 }
 
 .o-product-input::placeholder {
@@ -69,17 +78,18 @@ body {
 
 /* Button styles */
 .o-main-actions-container {
-    margin-top: 2rem;
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+    margin-top: 0.5rem;
 }
 
-.u-button {
-    padding: 12px 24px;
+.o-action-button, .o-ghost-button {
+    min-width: 180px;
+    padding: 16px 32px;
     font-size: 1rem;
-    font-weight: 500;
-    border: none;
     border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .o-action-button {
@@ -117,11 +127,12 @@ body {
 
 /* Response container */
 .o-response-container {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background-color: #f8fafc;
+    margin-top: 18px;
+    padding: 16px;
+    background: #f3f4f6;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    word-break: break-word;
+    max-width: 100%;
 }
 
 .o-response-container h1,
@@ -154,4 +165,49 @@ body {
     color: #7f8c8d;
     font-size: 0.9rem;
     font-style: italic;
+}
+
+.o-response-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.o-copy-button {
+    background: #fff;
+    color: #3498db;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 6px 18px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    box-shadow: none;
+}
+.o-copy-button:hover {
+    background: #f0f8ff;
+    color: #2563eb;
+}
+
+@media (max-width: 600px) {
+    .o-main-page-container {
+        padding: 16px 6px;
+        max-width: 98vw;
+    }
+    .o-action-button, .o-ghost-button {
+        min-width: 120px;
+        font-size: 0.95rem;
+        padding: 14px 16px;
+    }
+    .o-response-container {
+        padding: 10px;
+        font-size: 0.97rem;
+    }
+    .o-copy-button {
+        font-size: 0.97rem;
+        padding: 6px 12px;
+    }
 } 
