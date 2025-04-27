@@ -1,8 +1,13 @@
-# GPT Recommender
+# Review Cruncher
 
-![GPT Recommender](https://github.com/ChrisUser/GPT-recommender/blob/main/src/resources/images/screenshot.png?raw=true)
+Review Cruncher helps you to decide, which product to purchase.
+Before deciding to buy - Ask Review Cruncher.
+Review Cruncher will provide you with a Recommendation, Alternatives and independent Product Reviews.
 
-A books, movies, podcasts (and many other media) recommender system built with [Open AI API](https://openai.com/api/).
+A recommender system built with [Open AI API](https://openai.com/api/)
+
+<img width="557" alt="image" src="https://github.com/user-attachments/assets/c23a7bc3-c087-4d91-b06a-416bee9c6a5c" />
+
 
 ## Setup
 
@@ -12,32 +17,19 @@ Clone the project and install the dependencies with:
 npm install
 ```
 
-or
-
-```console
-yarn
-```
-
 <br />
 
 Run the project in a local enviroment with:
 
 ```console
-npm start
+node server.js
 ```
 
-or
-
 ```console
-yarn start
+npm start
 ```
 
 ## Usage
 
 Grab your [Open AI API key](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key) and paste it into the appropriate text input.
 
-Choose a subject, list your favourites, select a quantity and generate a new list of recommendations.
-
----
-
-Works with Open AI API GPT-3 and GPT-3.5.
