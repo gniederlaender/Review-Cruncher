@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { sendCompletionRequest } from '../resources/api-request'
+import { jsPDF } from 'jspdf'
 import '../styles/HomePage.css'
 
 const HomePage: React.FC = () => {
@@ -51,12 +52,53 @@ const HomePage: React.FC = () => {
         setIsLoading(false)
     }
 
+    /**
+     * Generates and downloads a PDF report of the response
+     */
+    const generatePDF = () => {
+        const doc = new jsPDF()
+        
+        // Add title
+        doc.setFontSize(20)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Review Cruncher Report', 20, 20)
+        
+        // Add product name
+        doc.setFontSize(16)
+        doc.text(`Product: ${product}`, 20, 35)
+        
+        // Add timestamp
+        const date = new Date().toLocaleString()
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'normal')
+        doc.text(`Generated on: ${date}`, 20, 45)
+        
+        // Add response content
+        doc.setFontSize(12)
+        const splitText = doc.splitTextToSize(finalResponse, 170) // Wrap text at 170 units
+        doc.text(splitText, 20, 60)
+        
+        // Save the PDF
+        doc.save(`review-cruncher-${product.toLowerCase().replace(/\s+/g, '-')}.pdf`)
+    }
+
+    /**
+     * Handles form submission
+     */
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault()
+        if (dataIsValid()) {
+            void sendRequest()
+        }
+    }
+
     return (
         <div className="o-page-container">
             <div className="o-claim-banner">
                 Before deciding to buy - <span>Ask Review Cruncher.</span>
             </div>
             <div className="o-main-page-container">
+                <form onSubmit={handleSubmit}>
                 <div className="u-input-row">
                     <p>Which product would you like to review?</p>
                     <input
@@ -80,12 +122,18 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="o-main-actions-container">
                     <div className="u-input-row">
-                        <button role="button" disabled={isLoading || !dataIsValid()} className="u-button o-action-button" onClick={() => void sendRequest()}>
-                            Provide an alternative and comparison
+                            <button 
+                                type="submit"
+                                role="button" 
+                                disabled={isLoading || !dataIsValid()} 
+                                className="u-button o-action-button"
+                            >
+                                Provide a Product review
                         </button>
                         {isLoading && <span className="o-loading-text">... loading</span>}
+                        </div>
                     </div>
-                </div>
+                </form>
                 {errorMessage && (
                     <p data-testid="errorTextContainer" className="o-error-text-container">
                         {errorMessage}
@@ -93,11 +141,24 @@ const HomePage: React.FC = () => {
                 )}
                 {finalResponse && (
                     <div className="o-response-wrapper">
-                        <button role="button" className="u-button o-copy-button" onClick={() => navigator.clipboard.writeText(finalResponse)}>
-                            Copy
-                        </button>
-                        <div className="o-response-container">
-                            <ReactMarkdown>{finalResponse}</ReactMarkdown>
+                        <div className="o-action-buttons">
+                            <button 
+                                role="button" 
+                                className="u-button o-copy-button" 
+                                onClick={() => navigator.clipboard.writeText(finalResponse)}
+                            >
+                                Copy
+                            </button>
+                            <button 
+                                role="button" 
+                                className="u-button o-pdf-button" 
+                                onClick={generatePDF}
+                            >
+                                Download PDF report
+                            </button>
+                        </div>
+                    <div className="o-response-container">
+                        <ReactMarkdown>{finalResponse}</ReactMarkdown>
                         </div>
                     </div>
                 )}

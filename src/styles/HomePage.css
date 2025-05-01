@@ -174,7 +174,14 @@ body {
     gap: 4px;
 }
 
-.o-copy-button {
+.o-action-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-bottom: 4px;
+}
+
+.o-copy-button, .o-pdf-button {
     background: #fff;
     color: #3498db;
     border: 2px solid #3498db;
@@ -182,14 +189,23 @@ body {
     font-weight: 500;
     font-size: 1rem;
     padding: 6px 18px;
-    margin-bottom: 4px;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
     box-shadow: none;
 }
-.o-copy-button:hover {
-    background: #f0f8ff;
+
+.o-pdf-button {
     color: #2563eb;
+    border-color: #2563eb;
+}
+
+.o-copy-button:hover, .o-pdf-button:hover {
+    background: #f0f8ff;
+}
+
+.o-pdf-button:hover {
+    background: #eff6ff;
+    color: #1d4ed8;
 }
 
 .o-claim-banner {
@@ -224,7 +240,10 @@ body {
         padding: 10px;
         font-size: 0.97rem;
     }
-    .o-copy-button {
+    .o-action-buttons {
+        gap: 8px;
+    }
+    .o-copy-button, .o-pdf-button {
         font-size: 0.97rem;
         padding: 6px 12px;
     }
