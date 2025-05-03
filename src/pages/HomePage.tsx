@@ -1,16 +1,19 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { sendCompletionRequest } from '../resources/api-request'
+import { sendProductAndSearchRequest, sendEmail } from '../resources/api-request'
 import { jsPDF } from 'jspdf'
 import '../styles/HomePage.css'
 
 const HomePage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false)
+    const [isSendingEmail, setIsSendingEmail] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
+    const [emailSuccess, setEmailSuccess] = useState('')
     const [lengthIssueText, setLengthIssueText] = useState('')
     const [product, setProduct] = useState('')
     const [email, setEmail] = useState('')
     const [finalResponse, setFinalResponse] = useState('')
+    const [searchResults, setSearchResults] = useState<any[]>([])
 
     /**
      * Checks for validity in user's entered data
@@ -28,25 +31,20 @@ const HomePage: React.FC = () => {
             setIsLoading(true)
             setErrorMessage('')
             setLengthIssueText('')
-            const completionResponse = await sendCompletionRequest('', product, 'gpt-4.1', email)
+            setSearchResults([])
 
-            // Error management
-            if (completionResponse.error) {
-                throw new Error(completionResponse.error.message || 'Something went wrong with the request')
+            const result = await sendProductAndSearchRequest('', product, 'gpt-4.1', email)
+
+            if (result.error) throw new Error(result.error.message || 'Something went wrong with the request')
+
+            if (result.recommendation) {
+                setFinalResponse(result.recommendation.responseMessage)
             }
-
-            // Success management
-            if (completionResponse.response) {
-                if (!completionResponse.response.responseMessage) {
-                    throw new Error('System was unable to satisfy your request, please retry.')
-                }
-                if (completionResponse.response.reason && completionResponse.response.reason === 'length') {
-                    setLengthIssueText(`This completion was interrupted because it was limited to 600 characters.`)
-                }
-                setFinalResponse(completionResponse.response.responseMessage)
+            if (result.search) {
+                console.log('Received search results:', result.search);
+                setSearchResults(result.search)
             }
         } catch (error: any) {
-            console.error(error)
             setErrorMessage(error.message)
         }
         setIsLoading(false)
@@ -78,8 +76,77 @@ const HomePage: React.FC = () => {
         const splitText = doc.splitTextToSize(finalResponse, 170) // Wrap text at 170 units
         doc.text(splitText, 20, 60)
         
+        // Add search results if available
+        if (searchResults.length > 0) {
+            // Add a new page if needed
+            const currentY = 60 + splitText.length * 7
+            if (currentY > 250) {
+                doc.addPage()
+            }
+            
+            // Add search results section
+            doc.setFontSize(16)
+            doc.setFont('helvetica', 'bold')
+            doc.text('Top YouTube Review Videos', 20, currentY + 20)
+            
+            doc.setFontSize(12)
+            doc.setFont('helvetica', 'normal')
+            let yPos = currentY + 35
+            
+            searchResults.forEach((result, index) => {
+                if (yPos > 250) {
+                    doc.addPage()
+                    yPos = 20
+                }
+                
+                // Add video title
+                doc.setFont('helvetica', 'bold')
+                doc.text(`${index + 1}. ${result.title}`, 20, yPos)
+                
+                // Add video link
+                doc.setFont('helvetica', 'normal')
+                doc.setTextColor(0, 0, 255) // Blue color for links
+                doc.text(result.link, 20, yPos + 7)
+                doc.setTextColor(0, 0, 0) // Reset color
+                
+                // Add video description
+                const description = doc.splitTextToSize(result.snippet, 170)
+                doc.text(description, 20, yPos + 14)
+                
+                yPos += 35 + (description.length * 7)
+            })
+        }
+        
         // Save the PDF
         doc.save(`review-cruncher-${product.toLowerCase().replace(/\s+/g, '-')}.pdf`)
+    }
+
+    /**
+     * Sends the report via email
+     */
+    const handleSendEmail = async () => {
+        try {
+            setIsSendingEmail(true)
+            setErrorMessage('')
+            setEmailSuccess('')
+
+            console.log('Sending email with search results:', {
+                product,
+                email,
+                finalResponseLength: finalResponse.length,
+                searchResultsCount: searchResults.length,
+                searchResults
+            });
+
+            const result = await sendEmail(product, email, finalResponse, searchResults)
+
+            if (result.error) throw new Error(result.error.message || 'Failed to send email')
+            
+            setEmailSuccess('Email sent successfully!')
+        } catch (error: any) {
+            setErrorMessage(error.message)
+        }
+        setIsSendingEmail(false)
     }
 
     /**
@@ -156,10 +223,38 @@ const HomePage: React.FC = () => {
                             >
                                 Download PDF report
                             </button>
+                            <button 
+                                role="button" 
+                                className="u-button o-email-button" 
+                                onClick={handleSendEmail}
+                                disabled={isSendingEmail}
+                            >
+                                {isSendingEmail ? 'Sending...' : 'Send via Email'}
+                            </button>
                         </div>
                     <div className="o-response-container">
                         <ReactMarkdown>{finalResponse}</ReactMarkdown>
                         </div>
+                    </div>
+                )}
+                {emailSuccess && (
+                    <p className="o-success-text-container">
+                        {emailSuccess}
+                    </p>
+                )}
+                {searchResults.length > 0 && (
+                    <div className="o-search-results">
+                        <h3>Live Google Search Results</h3>
+                        <ul>
+                            {searchResults.map((item, idx) => (
+                                <li key={idx} style={{ marginBottom: '1em' }}>
+                                    <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 'bold', color: '#2563eb' }}>
+                                        {item.title}
+                                    </a>
+                                    <p style={{ margin: 0 }}>{item.snippet}</p>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 )}
                 {lengthIssueText && (
