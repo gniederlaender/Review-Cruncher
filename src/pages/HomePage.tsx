@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { sendProductAndSearchRequest, sendEmail } from '../resources/api-request'
+import { sendProductAndSearchRequest, sendEmail, fetchRecentReviews } from '../resources/api-request'
 import { jsPDF } from 'jspdf'
 import '../styles/HomePage.css'
 
@@ -14,6 +14,17 @@ const HomePage: React.FC = () => {
     const [email, setEmail] = useState('')
     const [finalResponse, setFinalResponse] = useState('')
     const [searchResults, setSearchResults] = useState<any[]>([])
+    const [recentReviews, setRecentReviews] = useState<any[]>([])
+
+    useEffect(() => {
+        const loadRecentReviews = async () => {
+            const result = await fetchRecentReviews()
+            if (result.reviews) {
+                setRecentReviews(result.reviews)
+            }
+        }
+        void loadRecentReviews()
+    }, [])
 
     /**
      * Checks for validity in user's entered data
@@ -166,29 +177,46 @@ const HomePage: React.FC = () => {
             </div>
             <div className="o-main-page-container">
                 <form onSubmit={handleSubmit}>
-                <div className="u-input-row">
-                    <p>Which product would you like to review?</p>
-                    <input
-                        role="textbox"
-                        className="o-product-input"
-                        placeholder="Enter product name..."
-                        value={product}
-                        onChange={(e) => setProduct(e.target.value)}
-                    />
-                </div>
-                <div className="u-input-row">
-                    <p>Your email address:</p>
-                    <input
-                        type="email"
-                        role="textbox"
-                        className="o-product-input"
-                        placeholder="Enter your email..."
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                </div>
-                <div className="o-main-actions-container">
+                    <div className="u-input-row u-input-row-product">
+                        <p>Which product would you like to review?</p>
+                        <input
+                            role="textbox"
+                            className="o-product-input"
+                            placeholder="Enter product name..."
+                            value={product}
+                            onChange={(e) => setProduct(e.target.value)}
+                        />
+                    </div>
+                    {recentReviews.length > 0 && (
+                        <div className="o-recent-reviews">
+                            <div className="o-recent-reviews-chips">
+                                <span className="o-recent-reviews-label">Recent searches:</span>
+                                {recentReviews.map((review, idx) => (
+                                    <span
+                                        key={idx}
+                                        className="o-chip"
+                                        onClick={() => setProduct(review.product)}
+                                        title={review.response?.responseMessage?.slice(0, 100) || ''}
+                                    >
+                                        {review.product}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <div className="u-input-row">
+                        <p>Your email address:</p>
+                        <input
+                            type="email"
+                            role="textbox"
+                            className="o-product-input"
+                            placeholder="Enter your email..."
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
+                    <div className="o-main-actions-container">
+                        <div className="u-input-row">
                             <button 
                                 type="submit"
                                 role="button" 
@@ -196,8 +224,8 @@ const HomePage: React.FC = () => {
                                 className="u-button o-action-button"
                             >
                                 Provide a Product review
-                        </button>
-                        {isLoading && <span className="o-loading-text">... loading</span>}
+                            </button>
+                            {isLoading && <span className="o-loading-text">... loading</span>}
                         </div>
                     </div>
                 </form>

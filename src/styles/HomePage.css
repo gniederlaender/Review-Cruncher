@@ -49,6 +49,10 @@ body {
     margin-bottom: 1.2rem;
 }
 
+.u-input-row-product {
+    margin-bottom: 0.5rem;
+}
+
 .u-input-row p {
     font-size: 1rem;
     font-weight: 500;
@@ -302,4 +306,45 @@ body {
 }
 .o-search-results a:hover {
     text-decoration: underline;
+}
+
+.o-recent-reviews {
+    margin: 0.4em 0;
+    padding-left: 30px;
+    padding-bottom: 20px;
+}
+
+.o-recent-reviews-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3em;
+    max-width: 100%;
+}
+
+.o-chip {
+    display: inline-block;
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 1px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.o-chip:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.o-chip:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.o-recent-reviews-label {
+    font-size: 11px;
+    color: #64748b;
+    margin-right: 0.3em;
 } 

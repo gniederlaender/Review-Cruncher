@@ -11,6 +11,7 @@ const sendCompletionURL = process.env.REACT_APP_API_URL || 'http://localhost:500
 const sendSearchURL = process.env.REACT_APP_API_SEARCH_URL || 'http://localhost:5000/api/search'
 const sendCombinedURL = process.env.REACT_APP_API_COMBINED_URL || 'http://localhost:5000/api/combined'
 const sendEmailURL = process.env.REACT_APP_API_EMAIL_URL || 'http://localhost:5000/api/send-email'
+const recentReviewsURL = process.env.REACT_APP_API_RECENT_REVIEWS_URL || 'http://localhost:5000/api/recent-reviews'
 
 export const sendCompletionRequest = async (userToken: string, request: string, selectedModel: string, email: string): Promise<{ error?: any; response?: ResponseObject }> => {
     try {
@@ -97,5 +98,17 @@ export const sendEmail = async (
     } catch (error: any) {
         console.error('Email request error:', error);
         return { error: error.response?.data || error.message }
+    }
+}
+
+export const fetchRecentReviews = async (): Promise<{ error?: any; reviews?: any[] }> => {
+    try {
+        const response = await CustomAxios.get(recentReviewsURL, {
+            headers: { 'Accept': 'application/json' }
+        });
+        return { reviews: response.data.reviews };
+    } catch (error: any) {
+        console.error('Error fetching recent reviews:', error);
+        return { error: error.response?.data || error.message };
     }
 }

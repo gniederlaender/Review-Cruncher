@@ -315,6 +315,20 @@ app.post('/api/send-email', async (req, res) => {
     }
 });
 
+// Endpoint to get recent reviews
+app.get('/api/recent-reviews', async (req, res) => {
+    try {
+        const data = await readDataFile();
+        // Sort by timestamp descending and get last 4
+        const sorted = (data.reviews || []).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const last4 = sorted.slice(0, 4);
+        res.json({ reviews: last4 });
+    } catch (error) {
+        console.error('Error fetching recent reviews:', error);
+        res.status(500).json({ error: 'Failed to fetch recent reviews' });
+    }
+});
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
