@@ -35,9 +35,9 @@ const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
 
 // Create a transporter object using easyname.com SMTP
 const transporter = nodemailer.createTransport({
-    host: 'smtp.easyname.com',
-    port: 465, // Standard SMTP port with TLS
-    secure: true, // true for 465, false for other ports
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT, // Standard SMTP port with TLS
+    secure: process.env.EMAIL_SECURE, // true for 465, false for other ports
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
@@ -148,19 +148,6 @@ app.post('/api/recommend', async (req, res) => {
 **Value for Money Rating (1-5):**
 - [Product Name]: [Rating] - [Brief explanation]
 - [Best-in-Class Alternative]: [Rating] - [Brief explanation]
-
-**Best For:**
-- [Product Name]: [Type of user who would benefit most]
-- [Best-in-Class Alternative]: [Type of user who would benefit most]
-
-**User Reviews Summary:**
-- [Product Name]: [Brief summary of common user feedback]
-- [Best-in-Class Alternative]: [Brief summary of common user feedback]
-
-**Long-term Considerations:**
-- Durability: [Comparison]
-- Support/Warranty: [Comparison]
-- Future-proofing: [Comparison]
 
 **Recommendation:**
 Make a clear recommendation to buy or not, considering the user's needs and the comparison above.
@@ -279,19 +266,6 @@ app.post('/api/combined', async (req, res) => {
 **Value for Money Rating (1-5):**
 - [Product Name]: [Rating] - [Brief explanation]
 - [Best-in-Class Alternative]: [Rating] - [Brief explanation]
-
-**Best For:**
-- [Product Name]: [Type of user who would benefit most]
-- [Best-in-Class Alternative]: [Type of user who would benefit most]
-
-**User Reviews Summary:**
-- [Product Name]: [Brief summary of common user feedback]
-- [Best-in-Class Alternative]: [Brief summary of common user feedback]
-
-**Long-term Considerations:**
-- Durability: [Comparison]
-- Support/Warranty: [Comparison]
-- Future-proofing: [Comparison]
 
 **Recommendation:**
 Make a clear recommendation to buy or not. Decide for one of the products and give a clear recommendation.
