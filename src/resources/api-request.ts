@@ -7,11 +7,13 @@ interface ResponseObject {
     reason?: string
 }
 
-const sendCompletionURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/recommend'
-const sendSearchURL = process.env.REACT_APP_API_SEARCH_URL || 'http://localhost:5000/api/search'
-const sendCombinedURL = process.env.REACT_APP_API_COMBINED_URL || 'http://localhost:5000/api/combined'
-const sendEmailURL = process.env.REACT_APP_API_EMAIL_URL || 'http://localhost:5000/api/send-email'
-const recentReviewsURL = process.env.REACT_APP_API_RECENT_REVIEWS_URL || 'http://localhost:5000/api/recent-reviews'
+const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'
+
+const sendCompletionURL = `${baseURL}/recommend`
+const sendSearchURL = `${baseURL}/search`
+const sendCombinedURL = `${baseURL}/combined`
+const sendEmailURL = `${baseURL}/send-email`
+const recentReviewsURL = `${baseURL}/recent-reviews`
 
 export const sendCompletionRequest = async (userToken: string, request: string, selectedModel: string, email: string): Promise<{ error?: any; response?: ResponseObject }> => {
     try {

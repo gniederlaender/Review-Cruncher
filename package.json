@@ -1,6 +1,6 @@
 {
     "name": "review-cruncher",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "private": true,
     "dependencies": {
         "@types/nodemailer": "^6.4.17",
@@ -8,7 +8,6 @@
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",
         "express": "^5.1.0",
-        "jspdf": "^3.0.1",
         "nodemailer": "^6.10.1",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
@@ -30,6 +29,7 @@
         "not IE 11"
     ],
     "devDependencies": {
+        "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
         "@testing-library/dom": "^10.4.0",
         "@testing-library/jest-dom": "^6.6.3",
         "@testing-library/react": "^16.1.0",

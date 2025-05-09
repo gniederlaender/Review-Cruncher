@@ -180,46 +180,57 @@ body {
 
 .o-action-buttons {
     display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-bottom: 4px;
+    gap: 18px;
+    justify-content: center;
+    margin-bottom: 12px;
 }
 
-.o-copy-button, .o-pdf-button {
+.o-copy-button {
     background: #fff;
-    color: #3498db;
-    border: 2px solid #3498db;
+    color: #2563eb;
+    border: 2px solid #2563eb;
     border-radius: 8px;
     font-weight: 500;
     font-size: 1rem;
-    padding: 6px 18px;
+    padding: 16px 32px;
+    min-width: 180px;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    transition: background 0.15s, color 0.15s, border 0.15s;
     box-shadow: none;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.o-pdf-button {
-    color: #2563eb;
-    border-color: #2563eb;
-}
-
-.o-copy-button:hover, .o-pdf-button:hover {
+.o-copy-button:hover {
     background: #f0f8ff;
-}
-
-.o-pdf-button:hover {
-    background: #eff6ff;
+    border-color: #1d4ed8;
     color: #1d4ed8;
 }
 
 .o-email-button {
-    color: #059669;
-    border-color: #059669;
+    background: #2563eb;
+    color: #fff;
+    border: 2px solid #2563eb;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 16px 32px;
+    min-width: 180px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border 0.15s;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.o-email-button:hover {
-    background: #ecfdf5;
-    color: #047857;
+.o-email-button:hover:not(:disabled) {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #fff;
 }
 
 .o-email-button:disabled {
@@ -234,6 +245,8 @@ body {
     background-color: #ecfdf5;
     border-radius: 8px;
     border: 1px solid #a7f3d0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .o-claim-banner {
@@ -269,11 +282,13 @@ body {
         font-size: 0.97rem;
     }
     .o-action-buttons {
-        gap: 8px;
+        gap: 10px;
     }
-    .o-copy-button, .o-pdf-button {
-        font-size: 0.97rem;
-        padding: 6px 12px;
+    .o-copy-button, .o-email-button {
+        font-size: 1rem;
+        padding: 12px 0;
+        min-width: 120px;
+        min-height: 40px;
     }
     .o-claim-banner {
         font-size: 1.08rem;

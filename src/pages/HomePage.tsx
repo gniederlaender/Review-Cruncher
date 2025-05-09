@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { sendProductAndSearchRequest, sendEmail, fetchRecentReviews } from '../resources/api-request'
-import { jsPDF } from 'jspdf'
 import '../styles/HomePage.css'
 
 const HomePage: React.FC = () => {
@@ -62,77 +61,6 @@ const HomePage: React.FC = () => {
     }
 
     /**
-     * Generates and downloads a PDF report of the response
-     */
-    const generatePDF = () => {
-        const doc = new jsPDF()
-        
-        // Add title
-        doc.setFontSize(20)
-        doc.setFont('helvetica', 'bold')
-        doc.text('Review Cruncher Report', 20, 20)
-        
-        // Add product name
-        doc.setFontSize(16)
-        doc.text(`Product: ${product}`, 20, 35)
-        
-        // Add timestamp
-        const date = new Date().toLocaleString()
-        doc.setFontSize(12)
-        doc.setFont('helvetica', 'normal')
-        doc.text(`Generated on: ${date}`, 20, 45)
-        
-        // Add response content
-        doc.setFontSize(12)
-        const splitText = doc.splitTextToSize(finalResponse, 170) // Wrap text at 170 units
-        doc.text(splitText, 20, 60)
-        
-        // Add search results if available
-        if (searchResults.length > 0) {
-            // Add a new page if needed
-            const currentY = 60 + splitText.length * 7
-            if (currentY > 250) {
-                doc.addPage()
-            }
-            
-            // Add search results section
-            doc.setFontSize(16)
-            doc.setFont('helvetica', 'bold')
-            doc.text('Top YouTube Review Videos', 20, currentY + 20)
-            
-            doc.setFontSize(12)
-            doc.setFont('helvetica', 'normal')
-            let yPos = currentY + 35
-            
-            searchResults.forEach((result, index) => {
-                if (yPos > 250) {
-                    doc.addPage()
-                    yPos = 20
-                }
-                
-                // Add video title
-                doc.setFont('helvetica', 'bold')
-                doc.text(`${index + 1}. ${result.title}`, 20, yPos)
-                
-                // Add video link
-                doc.setFont('helvetica', 'normal')
-                doc.setTextColor(0, 0, 255) // Blue color for links
-                doc.text(result.link, 20, yPos + 7)
-                doc.setTextColor(0, 0, 0) // Reset color
-                
-                // Add video description
-                const description = doc.splitTextToSize(result.snippet, 170)
-                doc.text(description, 20, yPos + 14)
-                
-                yPos += 35 + (description.length * 7)
-            })
-        }
-        
-        // Save the PDF
-        doc.save(`review-cruncher-${product.toLowerCase().replace(/\s+/g, '-')}.pdf`)
-    }
-
-    /**
      * Sends the report via email
      */
     const handleSendEmail = async () => {
@@ -173,7 +101,7 @@ const HomePage: React.FC = () => {
     return (
         <div className="o-page-container">
             <div className="o-claim-banner">
-                Before deciding to buy - <span>Ask Review Cruncher.</span>
+                Before you buy - <span>Ask Review Cruncher.</span>
             </div>
             <div className="o-main-page-container">
                 <form onSubmit={handleSubmit}>
@@ -246,13 +174,6 @@ const HomePage: React.FC = () => {
                             </button>
                             <button 
                                 role="button" 
-                                className="u-button o-pdf-button" 
-                                onClick={generatePDF}
-                            >
-                                Download PDF report
-                            </button>
-                            <button 
-                                role="button" 
                                 className="u-button o-email-button" 
                                 onClick={handleSendEmail}
                                 disabled={isSendingEmail}
@@ -260,29 +181,20 @@ const HomePage: React.FC = () => {
                                 {isSendingEmail ? 'Sending...' : 'Send via Email'}
                             </button>
                         </div>
-                    <div className="o-response-container">
-                        <ReactMarkdown>{finalResponse}</ReactMarkdown>
+                        {emailSuccess && (
+                            <p className="o-success-text-container">
+                                {emailSuccess}
+                            </p>
+                        )}
+                        <div className="o-response-container">
+                            <ReactMarkdown
+                                components={{
+                                    a: (props) => (
+                                        <a href={props.href} target="_blank" rel="noopener noreferrer">{props.children}</a>
+                                    )
+                                }}
+                            >{finalResponse}</ReactMarkdown>
                         </div>
-                    </div>
-                )}
-                {emailSuccess && (
-                    <p className="o-success-text-container">
-                        {emailSuccess}
-                    </p>
-                )}
-                {searchResults.length > 0 && (
-                    <div className="o-search-results">
-                        <h3>Live Google Search Results</h3>
-                        <ul>
-                            {searchResults.map((item, idx) => (
-                                <li key={idx} style={{ marginBottom: '1em' }}>
-                                    <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 'bold', color: '#2563eb' }}>
-                                        {item.title}
-                                    </a>
-                                    <p style={{ margin: 0 }}>{item.snippet}</p>
-                                </li>
-                            ))}
-                        </ul>
                     </div>
                 )}
                 {lengthIssueText && (
