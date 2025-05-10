@@ -103,6 +103,10 @@ const HomePage: React.FC = () => {
             <div className="o-claim-banner">
                 Before you buy - <span>Ask Review Cruncher.</span>
             </div>
+            <div className="o-pitch-banner">
+                Not sure what to buy?<br />
+                <strong>ReviewCruncher</strong> gives you fast, AI-powered product comparisons before you commit.
+            </div>
             <div className="o-main-page-container">
                 <form onSubmit={handleSubmit}>
                     <div className="u-input-row u-input-row-product">

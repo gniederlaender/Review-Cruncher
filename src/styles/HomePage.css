@@ -283,12 +283,20 @@ body {
     }
     .o-action-buttons {
         gap: 10px;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
     }
     .o-copy-button, .o-email-button {
         font-size: 1rem;
         padding: 12px 0;
         min-width: 120px;
         min-height: 40px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .o-response-wrapper {
+        align-items: stretch;
     }
     .o-claim-banner {
         font-size: 1.08rem;
@@ -362,4 +370,27 @@ body {
     font-size: 11px;
     color: #64748b;
     margin-right: 0.3em;
+}
+
+.o-pitch-banner {
+    margin: 0 auto 18px auto;
+    max-width: 600px;
+    background: linear-gradient(90deg, #f0f4ff 0%, #e0e7ff 100%);
+    color: #1e293b;
+    font-size: 1.18rem;
+    font-weight: 500;
+    text-align: center;
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.06);
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+    .o-pitch-banner {
+        font-size: 1rem;
+        padding: 10px 6px;
+        margin-bottom: 12px;
+    }
 } 

@@ -36,8 +36,8 @@ const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
 // Create a transporter object using easyname.com SMTP
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT, // Standard SMTP port with TLS
-    secure: process.env.EMAIL_SECURE, // true for 465, false for other ports
+    port: Number(process.env.EMAIL_PORT), // Ensure port is a number
+    secure: process.env.EMAIL_SECURE === 'true', // Ensure secure is a boolean
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
@@ -118,7 +118,11 @@ app.post('/api/recommend', async (req, res) => {
             messages: [
                 {
                     role: 'developer',
-                    content: `You are a product recommendation expert. When the user tells you a product, identify the best-in-class alternative and return a comprehensive comparison and recommendation. If the user does not input a specific product (but a product group or category), identify the best-in-class product in that category and return a recommendation for that product. Provide a clear and structured comparison with the following format:
+                    content: `You are a recommendation expert specializing in products, services, and experiences. First, analyze the user's input to determine the type of request:
+
+1. If it's a specific product (e.g., "iPhone 14 Pro" or "Specialized Turbo Levo"):
+   - Identify the best-in-class alternative
+   - Provide a structured comparison as follows:
 
 **[Product Name] vs. [Best-in-Class Alternative]**
 
@@ -150,9 +154,92 @@ app.post('/api/recommend', async (req, res) => {
 - [Best-in-Class Alternative]: [Rating] - [Brief explanation]
 
 **Recommendation:**
-Make a clear recommendation to buy or not, considering the user's needs and the comparison above.
+Make a clear recommendation to buy or not. Decide for one of the products and give a clear recommendation.
 
-Use markdown formatting with **bold** text for headers and ensure proper line breaks and 1 empty line between sections. Limit the answer to 600 tokens, but make sure to give a complete answer.`
+2. If it's a product category (e.g., "mountain bikes" or "batteries"):
+   - First identify the best-in-class product in that category
+   - Then identify the best value alternative
+   - Provide a structured comparison using the exact same format as above, but with:
+
+**[Best-in-Class Product] vs. [Best Value Alternative]**
+
+[Then follow the exact same structure as case 1, including Key Features Comparison, Advantages, Price Comparison, Value for Money Rating, and Recommendation]
+
+3. If the requested topic is about "travel destinations":
+   - Provide a structured recommendation as follows:
+
+**[Destination] Recommendations**
+
+Short summary about, what is the main reason, anybody would travel to that destination.
+
+**Top Touristic Picks - what to visit:**
+1. [First Recommendation]
+   - [Brief explanation]
+   - Key Highlights:
+     * [Highlight 1]
+     * [Highlight 2]
+     * [Highlight 3]
+
+2. [Second Recommendation]
+   - [Brief explanation]
+   - Key Highlights:
+     * [Highlight 1]
+     * [Highlight 2]
+     * [Highlight 3]
+
+3. [Third Recommendation]
+   - [Brief explanation]
+   - Key Highlights:
+     * [Highlight 1]
+     * [Highlight 2]
+     * [Highlight 3]
+
+**Considerations:**
+- [Important factor 1]
+- [Important factor 2]
+- [Important factor 3]
+
+**Hidden gem:**
+[A hint about an experience or location at the [Destination], which only a few people know.]
+
+4. For other non-product topics (e.g., "video games"):
+   - Provide a structured recommendation as follows:
+
+**[Topic] Recommendations**
+
+**Top Picks:**
+1. [First Recommendation]
+   - Why it's great: [Brief explanation]
+   - Best for: [type of user/experience]
+   - Key Highlights:
+     * [Highlight 1]
+     * [Highlight 2]
+     * [Highlight 3]
+
+2. [Second Recommendation]
+   - Why it's great: [Brief explanation]
+   - Best for: [type of user/experience]
+   - Key Highlights:
+     * [Highlight 1]
+     * [Highlight 2]
+     * [Highlight 3]
+
+**Considerations:**
+- [Important factor 1]
+- [Important factor 2]
+- [Important factor 3]
+
+**Recommendation:**
+[Clear recommendation based on the user's needs]
+
+Additional Guidelines:
+- If the input is not in English, answer in the language of the input text
+- Use markdown formatting with **bold** text for headers
+- Ensure proper line breaks and 1 empty line between sections
+- Limit the answer to 500 tokens while maintaining completeness
+- For product categories, focus on current market leaders and best value options
+- For travel destinations, follow the structure provided
+- For other non-product topics, focus on providing actionable, specific recommendations`
                 },
                 {
                     role: 'user',
@@ -236,7 +323,11 @@ app.post('/api/combined', async (req, res) => {
                 messages: [
                     {
                         role: 'developer',
-                        content: `You are a product recommendation expert. When the user tells you a product, identify the best-in-class alternative and return a comprehensive comparison and recommendation. If the user does not input a specific product (but a product group or category), identify the best-in-class product in that category and return a recommendation for that product. Provide a clear and structured comparison with the following format:
+                        content: `You are a recommendation expert specializing in products, services, and experiences. First, analyze the user's input to determine the type of request:
+
+1. If it's a specific product (e.g., "iPhone 14 Pro" or "Specialized Turbo Levo"):
+   - Identify the best-in-class alternative
+   - Provide a structured comparison as follows:
 
 **[Product Name] vs. [Best-in-Class Alternative]**
 
@@ -270,7 +361,90 @@ app.post('/api/combined', async (req, res) => {
 **Recommendation:**
 Make a clear recommendation to buy or not. Decide for one of the products and give a clear recommendation.
 
-Use markdown formatting with **bold** text for headers and ensure proper line breaks and 1 empty line between sections. Limit the answer to 500 tokens, but make sure to give a complete answer.`
+2. If it's a product category and not a specific product with a name, brand, model, etc.:
+   - First identify the best-in-class product in that category
+   - Then identify the best value alternative
+   - Provide a structured comparison using the exact same format as follows:
+
+**[Best-in-Class Product] vs. [Best Value Alternative]**
+
+[Then follow the exact same structure as case 1, including Key Features Comparison, Advantages, Price Comparison, Value for Money Rating, and Recommendation]
+
+3. If the requested topic is about "travel destinations":
+   - Provide a structured recommendation as follows:
+
+**[Destination] Recommendations**
+
+Short summary about, what is the main reason, anybody would travel to that destination.
+
+**Top Touristic Picks - what to visit:**
+1. [First Recommendation]
+   - [Brief explanation]
+   - Key Highlights:
+     * [Highlight 1]
+     * [Highlight 2]
+     * [Highlight 3]
+
+2. [Second Recommendation]
+   - [Brief explanation]
+   - Key Highlights:
+     * [Highlight 1]
+     * [Highlight 2]
+     * [Highlight 3]
+
+3. [Third Recommendation]
+   - [Brief explanation]
+   - Key Highlights:
+     * [Highlight 1]
+     * [Highlight 2]
+     * [Highlight 3]
+
+**Considerations:**
+- [Important factor 1]
+- [Important factor 2]
+- [Important factor 3]
+
+**Hidden gem:**
+[A hint about an experience or location at the [Destination], which only a few people know.]
+
+4. For other non-product topics (e.g., "video games"):
+   - Provide a structured recommendation as follows:
+
+**[Topic] Recommendations**
+
+**Top Picks:**
+1. [First Recommendation]
+   - Why it's great: [Brief explanation]
+   - Best for: [type of user/experience]
+   - Key Highlights:
+     * [Highlight 1]
+     * [Highlight 2]
+     * [Highlight 3]
+
+2. [Second Recommendation]
+   - Why it's great: [Brief explanation]
+   - Best for: [type of user/experience]
+   - Key Highlights:
+     * [Highlight 1]
+     * [Highlight 2]
+     * [Highlight 3]
+
+**Considerations:**
+- [Important factor 1]
+- [Important factor 2]
+- [Important factor 3]
+
+**Recommendation:**
+[Clear recommendation based on the user's needs]
+
+Additional Guidelines:
+- If the input is not in English, answer in the language of the input text
+- Use markdown formatting with **bold** text for headers
+- Ensure proper line breaks and 1 empty line between sections
+- Limit the answer to 500 tokens while maintaining completeness
+- For product categories, focus on current market leaders and best value options
+- For travel destinations, follow the structure provided
+- For other non-product topics, focus on providing actionable, specific recommendations`
                     },
                     {
                         role: 'user',
