@@ -53,5 +53,10 @@
         "plugins": {
             "autoprefixer": {}
         }
+    },
+    "jest": {
+        "transformIgnorePatterns": [
+            "node_modules/(?!(react-markdown)/)"
+        ]
     }
 }
