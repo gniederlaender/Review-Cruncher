@@ -56,7 +56,7 @@
     },
     "jest": {
         "transformIgnorePatterns": [
-            "node_modules/(?!(react-markdown|devlop)/)"
+            "node_modules/(?!(react-markdown|devlop|hast-util-to-jsx-runtime|remark-parse|remark-rehype|rehype-raw|rehype-sanitize|unist-util-visit|unist-util-is|mdast-util-to-string|micromark|micromark-extension-[^/]+|vfile|vfile-message|bail|trough|is-plain-obj|property-information|space-separated-tokens|comma-separated-tokens|zwitch|web-namespaces|hastscript|hast-util-parse-selector|hast-util-sanitize|hast-util-to-html|hast-util-whitespace|hast-util-raw|hast-util-from-parse5|hast-util-to-string|hast-util-select|hast-util-is-element|hast-util-has-property|hast-util-parse-selector|hast-util-embedded|hast-util-find-and-replace)/)"
         ]
     }
 }
