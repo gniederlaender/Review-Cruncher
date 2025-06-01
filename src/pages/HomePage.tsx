@@ -11,6 +11,7 @@ const HomePage: React.FC = () => {
     const [lengthIssueText, setLengthIssueText] = useState('')
     const [product, setProduct] = useState('')
     const [email, setEmail] = useState('')
+    const [expectations, setExpectations] = useState('')
     const [finalResponse, setFinalResponse] = useState('')
     const [searchResults, setSearchResults] = useState<any[]>([])
     const [recentReviews, setRecentReviews] = useState<any[]>([])
@@ -43,7 +44,7 @@ const HomePage: React.FC = () => {
             setLengthIssueText('')
             setSearchResults([])
 
-            const result = await sendProductAndSearchRequest('', product, 'gpt-4.1', email)
+            const result = await sendProductAndSearchRequest('', product, 'gpt-4.1', email, expectations)
 
             if (result.error) throw new Error(result.error.message || 'Something went wrong with the request')
 
@@ -105,16 +106,16 @@ const HomePage: React.FC = () => {
             </div>
             <div className="o-pitch-banner">
                 Not sure what to buy?<br />
-                <strong>ReviewCruncher</strong> gives you fast, AI-powered product comparisons before you commit.
+                <strong>ReviewCruncher</strong> gives you fast, AI-powered product recommendations before you commit.
             </div>
             <div className="o-main-page-container">
                 <form onSubmit={handleSubmit}>
                     <div className="u-input-row u-input-row-product">
-                        <p>Which product would you like to review?</p>
+                        <p>Which are you planning to buy?</p>
                         <input
                             role="textbox"
                             className="o-product-input"
-                            placeholder="Enter product name..."
+                            placeholder="Enter product..."
                             value={product}
                             onChange={(e) => setProduct(e.target.value)}
                         />
@@ -137,6 +138,16 @@ const HomePage: React.FC = () => {
                         </div>
                     )}
                     <div className="u-input-row">
+                        <p>What do you expect from the product?<br />What is important for you?</p>
+                        <input
+                            role="textbox"
+                            className="o-product-input"
+                            placeholder="Enter expectations (optional)..."
+                            value={expectations}
+                            onChange={(e) => setExpectations(e.target.value)}
+                        />
+                    </div>
+                    <div className="u-input-row">
                         <p>Your email address:</p>
                         <input
                             type="email"
@@ -155,7 +166,7 @@ const HomePage: React.FC = () => {
                                 disabled={isLoading || !dataIsValid()} 
                                 className="u-button o-action-button"
                             >
-                                Provide a Product review
+                                Recommend Product
                             </button>
                             {isLoading && <span className="o-loading-text">... loading</span>}
                         </div>

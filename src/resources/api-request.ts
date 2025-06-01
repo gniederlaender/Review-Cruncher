@@ -41,12 +41,14 @@ export const sendProductAndSearchRequest = async (
   userToken: string,
   request: string,
   selectedModel: string,
-  email: string
+  email: string,
+  expectations?: string
 ): Promise<{ error?: any; recommendation?: ResponseObject; search?: any[] }> => {
   try {
     const response = await CustomAxios.post(sendCombinedURL, { 
       product: request,
-      email: email 
+      email: email,
+      expectations: expectations || ''
     }, {
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
     });

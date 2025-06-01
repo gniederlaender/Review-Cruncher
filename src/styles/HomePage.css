@@ -58,6 +58,13 @@ body {
     font-weight: 500;
     margin-bottom: 0.5rem;
     color: #2c3e50;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    padding: 0 16px;
 }
 
 .o-product-input {

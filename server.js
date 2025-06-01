@@ -101,7 +101,7 @@ async function writeDataFile(data) {
 // Endpoint to handle product recommendations
 app.post('/api/recommend', async (req, res) => {
     try {
-        const { product, email } = req.body;
+        const { product, email, expectations } = req.body;
 
         if (!product || !email) {
             return res.status(400).json({ error: 'Product and email are required' });
@@ -109,7 +109,7 @@ app.post('/api/recommend', async (req, res) => {
 
         const headers = {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
+            'Authorization': 'Bearer ' + OPENAI_API_KEY
         };
 
         const params = {
@@ -118,132 +118,72 @@ app.post('/api/recommend', async (req, res) => {
             messages: [
                 {
                     role: 'developer',
-                    content: `You are a recommendation expert specializing in products, services, and experiences. First, analyze the user's input to determine the type of request:
-
-1. If it's a specific product (e.g., "iPhone 14 Pro" or "Specialized Turbo Levo"):
-   - Identify the best-in-class alternative
-   - Provide a structured comparison as follows:
-
-**[Product Name] vs. [Best-in-Class Alternative]**
-
-**Key Features Comparison:**
-- [Product Name]:
-  * [Key Feature 1]
-  * [Key Feature 2]
-  * [Key Feature 3]
-- [Best-in-Class Alternative]:
-  * [Key Feature 1]
-  * [Key Feature 2]
-  * [Key Feature 3]
-
-**Advantages [Product Name]:**
-1. [First advantage]
-2. [Second advantage]
-3. [Third advantage]
-
-**Advantages [Best-in-Class Alternative]:**
-1. [First advantage]
-2. [Second advantage]
-3. [Third advantage]
-
-**Price Comparison:**
-[Product Name] is around [price] and [Best-in-Class Alternative] is around [price].
-
-**Value for Money Rating (1-5):**
-- [Product Name]: [Rating] - [Brief explanation]
-- [Best-in-Class Alternative]: [Rating] - [Brief explanation]
-
-**Recommendation:**
-Make a clear recommendation to buy or not. Decide for one of the products and give a clear recommendation.
-
-2. If it's a product category (e.g., "mountain bikes" or "batteries"):
-   - First identify the best-in-class product in that category
-   - Then identify the best value alternative
-   - Provide a structured comparison using the exact same format as above, but with:
-
-**[Best-in-Class Product] vs. [Best Value Alternative]**
-
-[Then follow the exact same structure as case 1, including Key Features Comparison, Advantages, Price Comparison, Value for Money Rating, and Recommendation]
-
-3. If the requested topic is about "travel destinations":
-   - Provide a structured recommendation as follows:
-
-**[Destination] Recommendations**
-
-Short summary about, what is the main reason, anybody would travel to that destination.
-
-**Top Touristic Picks - what to visit:**
-1. [First Recommendation]
-   - [Brief explanation]
-   - Key Highlights:
-     * [Highlight 1]
-     * [Highlight 2]
-     * [Highlight 3]
-
-2. [Second Recommendation]
-   - [Brief explanation]
-   - Key Highlights:
-     * [Highlight 1]
-     * [Highlight 2]
-     * [Highlight 3]
-
-3. [Third Recommendation]
-   - [Brief explanation]
-   - Key Highlights:
-     * [Highlight 1]
-     * [Highlight 2]
-     * [Highlight 3]
-
-**Considerations:**
-- [Important factor 1]
-- [Important factor 2]
-- [Important factor 3]
-
-**Hidden gem:**
-[A hint about an experience or location at the [Destination], which only a few people know.]
-
-4. For other non-product topics (e.g., "video games"):
-   - Provide a structured recommendation as follows:
-
-**[Topic] Recommendations**
-
-**Top Picks:**
-1. [First Recommendation]
-   - Why it's great: [Brief explanation]
-   - Best for: [type of user/experience]
-   - Key Highlights:
-     * [Highlight 1]
-     * [Highlight 2]
-     * [Highlight 3]
-
-2. [Second Recommendation]
-   - Why it's great: [Brief explanation]
-   - Best for: [type of user/experience]
-   - Key Highlights:
-     * [Highlight 1]
-     * [Highlight 2]
-     * [Highlight 3]
-
-**Considerations:**
-- [Important factor 1]
-- [Important factor 2]
-- [Important factor 3]
-
-**Recommendation:**
-[Clear recommendation based on the user's needs]
-
-Additional Guidelines:
-- If the input is not in English, answer in the language of the input text
-- Use markdown formatting with **bold** text for headers
-- Ensure proper line breaks and 1 empty line between sections
-- Limit the answer to 500 tokens while maintaining completeness
-- For product categories, focus on current market leaders and best value options
-- For travel destinations, follow the structure provided
-- For other non-product topics, focus on providing actionable, specific recommendations`
-                },
-                {
-                    role: 'user',
-                    content: `Hello. Shall I buy ${product}?`
+                    content:
+                        'You are a recommendation expert specializing in products, services, and experiences. First, analyze the user\'s input to determine the type of request.\n\n' +
+                        '1. If it\'s a specific product (e.g., "iPhone 14 Pro" or "Specialized Turbo Levo"):\n' +
+                        '   - Identify the best-in-class alternative\n' +
+                        '   - Provide a structured comparison as follows:\n\n' +
+                        '**[Product Name] vs. [Best-in-Class Alternative]**\n\n' +
+                        '**Key Features Comparison:**\n' +
+                        '- [Product Name]:\n  * [Key Feature 1]\n  * [Key Feature 2]\n  * [Key Feature 3]\n' +
+                        '- [Best-in-Class Alternative]:\n  * [Key Feature 1]\n  * [Key Feature 2]\n  * [Key Feature 3]\n\n' +
+                        '**Advantages [Product Name]:**\n1. [First advantage]\n2. [Second advantage]\n3. [Third advantage]\n\n' +
+                        '**Advantages [Best-in-Class Alternative]:**\n1. [First advantage]\n2. [Second advantage]\n3. [Third advantage]\n\n' +
+                        '**Price Comparison:**\n[Product Name] is around [price] and [Best-in-Class Alternative] is around [price].\n\n' +
+                        '**Value for Money Rating (1-5):**\n- [Product Name]: [Rating] - [Brief explanation]\n- [Best-in-Class Alternative]: [Rating] - [Brief explanation]\n\n' +
+                        '**Recommendation:**\nMake a clear recommendation to buy or not. Decide for one of the products and give a clear recommendation.\n\n' +
+                        '2. If it\'s a product category (e.g., "mountain bikes" or "batteries"):\n' +
+                        '   - First identify the best-in-class product in that category\n' +
+                        '   - Then identify the best value alternative\n' +
+                        '   - Provide a structured comparison using the exact same format as above, but with:\n\n' +
+                        '**[Best-in-Class Product] vs. [Best Value Alternative]**\n\n' +
+                        '[Then follow the exact same structure as case 1, including Key Features Comparison, Advantages, Price Comparison, Value for Money Rating, and Recommendation]\n\n' +
+                        '3. If the requested topic is about "travel destinations":\n' +
+                        '   - Provide a structured recommendation as follows:\n\n' +
+                        '**[Destination] Recommendations**\n\n' +
+                        'Short summary about, what is the main reason, anybody would travel to that destination.\n\n' +
+                        '**Top Touristic Picks - what to visit:**\n1. [First Recommendation]\n' +
+                        '   - [Brief explanation]\n' +
+                        '   - Key Highlights:\n' +
+                        '     * [Highlight 1]\n' +
+                        '     * [Highlight 2]\n' +
+                        '     * [Highlight 3]\n\n' +
+                        '2. [Second Recommendation]\n' +
+                        '   - [Brief explanation]\n' +
+                        '   - Key Highlights:\n' +
+                        '     * [Highlight 1]\n' +
+                        '     * [Highlight 2]\n' +
+                        '     * [Highlight 3]\n\n' +
+                        '3. [Third Recommendation]\n' +
+                        '   - [Brief explanation]\n' +
+                        '   - Key Highlights:\n' +
+                        '     * [Highlight 1]\n' +
+                        '     * [Highlight 2]\n' +
+                        '     * [Highlight 3]\n\n' +
+                        '**Considerations:**\n- [Important factor 1]\n- [Important factor 2]\n- [Important factor 3]\n\n' +
+                        '**Hidden gem:**\n[A hint about an experience or location at the [Destination], which only a few people know.]\n\n' +
+                        '4. For other non-product topics (e.g., "video games"):\n' +
+                        '   - Provide a structured recommendation as follows:\n\n' +
+                        '**[Topic] Recommendations**\n\n' +
+                        '**Top Picks:**\n1. [First Recommendation]\n' +
+                        '   - Why it\'s great: [Brief explanation]\n' +
+                        '   - Best for: [type of user/experience]\n' +
+                        '   - Key Highlights:\n' +
+                        '     * [Highlight 1]\n' +
+                        '     * [Highlight 2]\n' +
+                        '     * [Highlight 3]\n\n' +
+                        '2. [Second Recommendation]\n' +
+                        '   - Why it\'s great: [Brief explanation]\n' +
+                        '   - Best for: [type of user/experience]\n' +
+                        '   - Key Highlights:\n' +
+                        '     * [Highlight 1]\n' +
+                        '     * [Highlight 2]\n' +
+                        '     * [Highlight 3]\n\n' +
+                        '**Considerations:**\n- [Important factor 1]\n- [Important factor 2]\n- [Important factor 3]\n\n' +
+                        '**Recommendation:**\n[Clear recommendation based on the user\'s needs]\n\n' +
+                        'Additional Guidelines:\n- If the input is not in English, answer in the language of the input text\n- Use markdown formatting with **bold** text for headers\n- Ensure proper line breaks and 1 empty line between sections\n- Limit the answer to 500 tokens while maintaining completeness\n- For product categories, focus on current market leaders and best value options\n- For travel destinations, follow the structure provided\n- For other non-product topics, focus on providing actionable, specific recommendations\n- If the user has provided specific expectations or requirements, make sure to address them in your recommendation and comparison\n\n' +
+                        (expectations ? 'My expectations: ' + expectations + '\n\n' : '') +
+                        'Hello. Shall I buy ' + product
                 }
             ]
         };
@@ -261,6 +201,7 @@ Additional Guidelines:
             timestamp: new Date().toISOString(),
             product,
             email,
+            expectations: expectations || '',
             response: responseData
         });
         await writeDataFile(data);
@@ -287,7 +228,7 @@ app.post('/api/search', async (req, res) => {
         if (!query) {
             return res.status(400).json({ error: 'Query is required' });
         }
-        const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}`;
+        const url = 'https://www.googleapis.com/customsearch/v1?q=' + encodeURIComponent(query) + '&key=' + GOOGLE_API_KEY + '&cx=' + GOOGLE_CSE_ID;
         const response = await axios.get(url);
 
         // You can customize what you return to the frontend
@@ -308,7 +249,7 @@ app.post('/api/search', async (req, res) => {
 // Combined endpoint for both recommendation and search
 app.post('/api/combined', async (req, res) => {
     try {
-        const { product, email } = req.body;
+        const { product, email, expectations } = req.body;
 
         if (!product || !email) {
             return res.status(400).json({ error: 'Product and email are required' });
@@ -323,142 +264,52 @@ app.post('/api/combined', async (req, res) => {
                 messages: [
                     {
                         role: 'developer',
-                        content: `You are a recommendation expert specializing in products, services, and experiences. First, analyze the user's input to determine the type of request:
-
-1. If it's a specific product (e.g., "iPhone 14 Pro" or "Specialized Turbo Levo"):
-   - Identify the best-in-class alternative
-   - Provide a structured comparison as follows:
-
-**[Product Name] vs. [Best-in-Class Alternative]**
-
-**Key Features Comparison:**
-- [Product Name]:
-  * [Key Feature 1]
-  * [Key Feature 2]
-  * [Key Feature 3]
-- [Best-in-Class Alternative]:
-  * [Key Feature 1]
-  * [Key Feature 2]
-  * [Key Feature 3]
-
-**Advantages [Product Name]:**
-1. [First advantage]
-2. [Second advantage]
-3. [Third advantage]
-
-**Advantages [Best-in-Class Alternative]:**
-1. [First advantage]
-2. [Second advantage]
-3. [Third advantage]
-
-**Price Comparison:**
-[Product Name] is around [price] and [Best-in-Class Alternative] is around [price].
-
-**Value for Money Rating (1-5):**
-- [Product Name]: [Rating] - [Brief explanation]
-- [Best-in-Class Alternative]: [Rating] - [Brief explanation]
-
-**Recommendation:**
-Make a clear recommendation to buy or not. Decide for one of the products and give a clear recommendation.
-
-2. If it's a product category and not a specific product with a name, brand, model, etc.:
-   - First identify the best-in-class product in that category
-   - Then identify the best value alternative
-   - Provide a structured comparison using the exact same format as follows:
-
-**[Best-in-Class Product] vs. [Best Value Alternative]**
-
-[Then follow the exact same structure as case 1, including Key Features Comparison, Advantages, Price Comparison, Value for Money Rating, and Recommendation]
-
-3. If the requested topic is about "travel destinations":
-   - Provide a structured recommendation as follows:
-
-**[Destination] Recommendations**
-
-Short summary about, what is the main reason, anybody would travel to that destination.
-
-**Top Touristic Picks - what to visit:**
-1. [First Recommendation]
-   - [Brief explanation]
-   - Key Highlights:
-     * [Highlight 1]
-     * [Highlight 2]
-     * [Highlight 3]
-
-2. [Second Recommendation]
-   - [Brief explanation]
-   - Key Highlights:
-     * [Highlight 1]
-     * [Highlight 2]
-     * [Highlight 3]
-
-3. [Third Recommendation]
-   - [Brief explanation]
-   - Key Highlights:
-     * [Highlight 1]
-     * [Highlight 2]
-     * [Highlight 3]
-
-**Considerations:**
-- [Important factor 1]
-- [Important factor 2]
-- [Important factor 3]
-
-**Hidden gem:**
-[A hint about an experience or location at the [Destination], which only a few people know.]
-
-4. For other non-product topics (e.g., "video games"):
-   - Provide a structured recommendation as follows:
-
-**[Topic] Recommendations**
-
-**Top Picks:**
-1. [First Recommendation]
-   - Why it's great: [Brief explanation]
-   - Best for: [type of user/experience]
-   - Key Highlights:
-     * [Highlight 1]
-     * [Highlight 2]
-     * [Highlight 3]
-
-2. [Second Recommendation]
-   - Why it's great: [Brief explanation]
-   - Best for: [type of user/experience]
-   - Key Highlights:
-     * [Highlight 1]
-     * [Highlight 2]
-     * [Highlight 3]
-
-**Considerations:**
-- [Important factor 1]
-- [Important factor 2]
-- [Important factor 3]
-
-**Recommendation:**
-[Clear recommendation based on the user's needs]
-
-Additional Guidelines:
-- If the input is not in English, answer in the language of the input text
-- Use markdown formatting with **bold** text for headers
-- Ensure proper line breaks and 1 empty line between sections
-- Limit the answer to 500 tokens while maintaining completeness
-- For product categories, focus on current market leaders and best value options
-- For travel destinations, follow the structure provided
-- For other non-product topics, focus on providing actionable, specific recommendations`
+                        content:
+                            'You are a recommendation expert specializing in products, services, and experiences.' +
+                            'First, analyze the user\'s input to determine the type of request.\n\n' +
+                            '1. If it\'s a specific product (e.g., "iPhone 14 Pro" or "Specialized Turbo Levo"):\n' +
+                            '   - Identify the best-in-class alternative\n' +
+                            '   - Provide a structured comparison as follows:\n\n' +
+                            '**[Product Name] key features**\n\n' +
+                            '* [Key Feature 1]\n  * [Key Feature 2]\n  * [Key Feature 3]\n' +
+                            '**You can consider [Best-in-Class Alternative] as an alternative**\n\n' +
+                            '* [Key Feature 1]\n  * [Key Feature 2]\n  * [Key Feature 3]\n\n' +
+                            '**Price Comparison:**\n[Product Name] is around [price] and [Best-in-Class Alternative] is around [price].\n\n' +
+                            '**Value for Money Rating (1-5):**\n- [Product Name]: [Rating] - [Brief explanation]\n- [Best-in-Class Alternative]: [Rating] - [Brief explanation]\n\n' +
+                            '**Recommendation:**\nMake a clear recommendation to buy or not. Decide for one of the products and give a clear recommendation. If the user provided expectations, make sure to address them in your recommendation.\n\n' +
+                            '2. If it\'s a product category (e.g., "mountain bikes" or "batteries"):\n' +
+                            '   - First identify the best-in-class product in that category. That will be our [Best-in-Class Product] for the comparision we will show to the User\n' +
+                            '   - Then identify the best value alternative. That will be our [Best-Value Alternative] for the comparision\n' +
+                            '   - Provide a structured comparison between [Best-in-Class Product] and [Best-Value Alternative] using the exact same format as above\n\n' +
+                            '   - We will not evaluate the product category, we will only evaluate the [Best-in-Class Product] and [Best-Value Alternative] and give a recommendation to the User\n\n' +
+                            '**[Best-in-Class Product name] key features**\n\n' +
+                            '* [Key Feature 1]\n  * [Key Feature 2]\n  * [Key Feature 3]\n' +
+                            '**You can consider [Best-Value Alternative name] as an alternative**\n\n' +
+                            '* [Key Feature 1]\n  * [Key Feature 2]\n  * [Key Feature 3]\n\n' +
+                            '[Then follow the exact same structure as case 1, including Price Comparison, Value for Money Rating, and Recommendation]\n\n' +
+                            'Additional Guidelines:\n- If the input is not in English, answer in the language of the input text\n' +
+                            '- Use markdown formatting with **bold** text for headers\n' +
+                            '- Ensure proper line breaks and 1 empty line before bold text headers\n' +
+                            '- Limit the answer to 500 tokens while maintaining completeness\n' +
+                            '- For product categories, focus on current market leaders and best value options\n' +
+                            '- For travel destinations, follow the structure provided\n' +
+                            '- For other non-product topics, focus on providing actionable, specific recommendations\n' +
+                            '- If the user has provided specific expectations or requirements, make sure to address them in your recommendation and comparison\n\n' +
+                            'Hello. Shall I buy ' + product + ', or do I have a better option? ' + (expectations ? '\n\nMy expectations: ' + expectations : '')
                     },
                     {
                         role: 'user',
-                        content: `Hello. Shall I buy ${product}?`
+                        content: 'Hello. Shall I buy ' + product + ', or do I have a better option? ' + (expectations ? '\n\nMy expectations: ' + expectations : '')
                     }
                 ]
             }, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    'Authorization': 'Bearer ' + OPENAI_API_KEY
                 }
             }),
             // Google Search API call
-            axios.get(`https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(`${product} Youtube review`)}&key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}`)
+            axios.get('https://www.googleapis.com/customsearch/v1?q=' + encodeURIComponent(product + ' Youtube review') + '&key=' + GOOGLE_API_KEY + '&cx=' + GOOGLE_CSE_ID)
         ]);
 
         const recommendationData = {
@@ -482,6 +333,7 @@ Additional Guidelines:
             timestamp: new Date().toISOString(),
             product,
             email,
+            expectations: expectations || '',
             recommendation: recommendationData,
             searchResults
         });
@@ -493,13 +345,6 @@ Additional Guidelines:
         });
     } catch (error) {
         console.error('Error:', error.response?.data || error.message);
-        
-        if (error.response?.status === 401) {
-            return res.status(401).json({ error: 'API key is invalid' });
-        } else if (error.response?.status === 429) {
-            return res.status(429).json({ error: 'Rate limit exceeded' });
-        }
-        
         res.status(500).json({ error: 'Something went wrong with the request' });
     }
 });
@@ -527,7 +372,7 @@ app.post('/api/send-email', async (req, res) => {
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
-            subject: `Review Cruncher Report: ${product}`,
+            subject: 'Review Cruncher Report: ' + product,
             html: generateEmailContent(product, recommendation, search_results || [])
         };
 
