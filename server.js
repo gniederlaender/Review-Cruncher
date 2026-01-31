@@ -7,6 +7,13 @@ const path = require('path');
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
+// Import source modules
+const RedditSource = require('./modules/sources/reddit');
+const YouTubeSource = require('./modules/sources/youtube');
+const BestBuySource = require('./modules/sources/bestbuy');
+const TwitterSource = require('./modules/sources/twitter');
+const OpinionSynthesizer = require('./modules/synthesizer');
+
 const app = express();
 const port = process.env.SERVERPORT || 5000;
 console.log('Server port:', port);
@@ -32,6 +39,17 @@ const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const DATA_FILE = path.join(__dirname, 'data.json');
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
+
+// Initialize source modules
+const redditSource = new RedditSource(
+    process.env.REDDIT_CLIENT_ID,
+    process.env.REDDIT_CLIENT_SECRET,
+    process.env.REDDIT_USER_AGENT || 'ReviewCruncher/1.0'
+);
+const youtubeSource = new YouTubeSource(process.env.YOUTUBE_API_KEY || GOOGLE_API_KEY);
+const bestbuySource = new BestBuySource(process.env.BESTBUY_API_KEY);
+const twitterSource = new TwitterSource(process.env.TWITTER_BEARER_TOKEN);
+const synthesizer = new OpinionSynthesizer(OPENAI_API_KEY);
 
 // Create a transporter object using easyname.com SMTP
 const transporter = nodemailer.createTransport({
@@ -246,7 +264,7 @@ app.post('/api/search', async (req, res) => {
     }
 });
 
-// Combined endpoint for both recommendation and search
+// Combined endpoint for multi-source opinion synthesis
 app.post('/api/combined', async (req, res) => {
     try {
         const { product, email, expectations } = req.body;
@@ -255,79 +273,87 @@ app.post('/api/combined', async (req, res) => {
             return res.status(400).json({ error: 'Product and email are required' });
         }
 
-        // Make both API calls in parallel
-        const [recommendationResponse, searchResponse] = await Promise.all([
-            // Recommendation API call
-            axios.post(OPENAI_API_URL, {
-                model: 'gpt-4.1',
-                max_tokens: MAX_TOKENS,
-                messages: [
-                    {
-                        role: 'developer',
-                        content:
-                            'You are a recommendation expert specializing in products, services, and experiences.' +
-                            'First, analyze the user\'s input to determine the type of request.\n\n' +
-                            '1. If it\'s a specific product (e.g., "iPhone 14 Pro" or "Specialized Turbo Levo"):\n' +
-                            '   - Identify the best-in-class alternative\n' +
-                            '   - Provide a structured comparison as follows:\n\n' +
-                            '**[Product Name] key features**\n\n' +
-                            '* [Key Feature 1]\n  * [Key Feature 2]\n  * [Key Feature 3]\n' +
-                            '**You can consider [Best-in-Class Alternative] as an alternative**\n\n' +
-                            '* [Key Feature 1]\n  * [Key Feature 2]\n  * [Key Feature 3]\n\n' +
-                            '**Price Comparison:**\n[Product Name] is around [price] and [Best-in-Class Alternative] is around [price].\n\n' +
-                            '**Value for Money Rating (1-5):**\n- [Product Name]: [Rating] - [Brief explanation]\n- [Best-in-Class Alternative]: [Rating] - [Brief explanation]\n\n' +
-                            '**Recommendation:**\nMake a clear recommendation to buy or not. Decide for one of the products and give a clear recommendation. If the user provided expectations, make sure to address them in your recommendation.\n\n' +
-                            '2. If it\'s a product category (e.g., "mountain bikes" or "batteries"):\n' +
-                            '   - First identify the best-in-class product in that category. That will be our [Best-in-Class Product] for the comparision we will show to the User\n' +
-                            '   - Then identify the best value alternative. That will be our [Best-Value Alternative] for the comparision\n' +
-                            '   - Provide a structured comparison between [Best-in-Class Product] and [Best-Value Alternative] using the exact same format as above\n\n' +
-                            '   - We will not evaluate the product category, we will only evaluate the [Best-in-Class Product] and [Best-Value Alternative] and give a recommendation to the User\n\n' +
-                            '**[Best-in-Class Product name] key features**\n\n' +
-                            '* [Key Feature 1]\n  * [Key Feature 2]\n  * [Key Feature 3]\n' +
-                            '**You can consider [Best-Value Alternative name] as an alternative**\n\n' +
-                            '* [Key Feature 1]\n  * [Key Feature 2]\n  * [Key Feature 3]\n\n' +
-                            '[Then follow the exact same structure as case 1, including Price Comparison, Value for Money Rating, and Recommendation]\n\n' +
-                            'Additional Guidelines:\n- If the input is not in English, answer in the language of the input text\n' +
-                            '- Use markdown formatting with **bold** text for headers\n' +
-                            '- Ensure proper line breaks and 1 empty line before bold text headers\n' +
-                            '- Limit the answer to 500 tokens while maintaining completeness\n' +
-                            '- For product categories, focus on current market leaders and best value options\n' +
-                            '- For travel destinations, follow the structure provided\n' +
-                            '- For other non-product topics, focus on providing actionable, specific recommendations\n' +
-                            '- If the user has provided specific expectations or requirements, make sure to address them in your recommendation and comparison\n\n' +
-                            'Hello. Shall I buy ' + product + ', or do I have a better option? ' + (expectations ? '\n\nMy expectations: ' + expectations : '')
-                    },
-                    {
-                        role: 'user',
-                        content: 'Hello. Shall I buy ' + product + ', or do I have a better option? ' + (expectations ? '\n\nMy expectations: ' + expectations : '')
-                    }
-                ]
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + OPENAI_API_KEY
-                }
+        console.log(`Processing multi-source analysis for: ${product}`);
+
+        // Fetch data from all sources in parallel
+        const sourceResults = await Promise.allSettled([
+            redditSource.search(product).catch(err => {
+                console.error('Reddit error:', err.message);
+                return { source: 'reddit', available: false, error: err.message };
             }),
-            // Google Search API call
-            axios.get('https://www.googleapis.com/customsearch/v1?q=' + encodeURIComponent(product + ' Youtube review') + '&key=' + GOOGLE_API_KEY + '&cx=' + GOOGLE_CSE_ID)
+            youtubeSource.search(product).catch(err => {
+                console.error('YouTube error:', err.message);
+                return { source: 'youtube', available: false, error: err.message };
+            }),
+            bestbuySource.search(product).catch(err => {
+                console.error('Best Buy error:', err.message);
+                return { source: 'bestbuy', available: false, error: err.message };
+            }),
+            twitterSource.search(product).catch(err => {
+                console.error('Twitter error:', err.message);
+                return { source: 'twitter', available: false, error: err.message };
+            }),
+            // Google Custom Search as fallback for news/articles
+            axios.get('https://www.googleapis.com/customsearch/v1', {
+                params: {
+                    q: `${product} review`,
+                    key: GOOGLE_API_KEY,
+                    cx: GOOGLE_CSE_ID,
+                    num: 5
+                }
+            }).then(response => ({
+                source: 'google',
+                available: true,
+                articles: (response.data.items || []).map(item => ({
+                    title: item.title,
+                    link: item.link,
+                    snippet: item.snippet
+                }))
+            })).catch(err => {
+                console.error('Google Search error:', err.message);
+                return { source: 'google', available: false, error: err.message };
+            })
         ]);
 
-        const recommendationData = {
-            responseMessage: recommendationResponse.data.choices[0].message.content + '\n\n\n**Youtube reviews**\n\n' + 
-                (searchResponse.data.items || [])
-                    .slice(0, 5)
-                    .map((item, index) => `${index + 1}. [${item.title}](${item.link})`)
-                    .join('\n'),
-            reason: recommendationResponse.data.choices[0].finish_reason
+        // Extract results from settled promises
+        const sources = {
+            reddit: sourceResults[0].status === 'fulfilled' ? sourceResults[0].value : { source: 'reddit', available: false },
+            youtube: sourceResults[1].status === 'fulfilled' ? sourceResults[1].value : { source: 'youtube', available: false },
+            bestbuy: sourceResults[2].status === 'fulfilled' ? sourceResults[2].value : { source: 'bestbuy', available: false },
+            twitter: sourceResults[3].status === 'fulfilled' ? sourceResults[3].value : { source: 'twitter', available: false },
+            google: sourceResults[4].status === 'fulfilled' ? sourceResults[4].value : { source: 'google', available: false }
         };
 
-        const searchResults = (searchResponse.data.items || []).slice(0, 5).map(item => ({
-            title: item.title,
-            link: item.link,
-            snippet: item.snippet
-        }));
+        console.log('Sources fetched:', {
+            reddit: sources.reddit.available,
+            youtube: sources.youtube.available,
+            bestbuy: sources.bestbuy.available,
+            twitter: sources.twitter.available,
+            google: sources.google.available
+        });
 
-        // Save both results to data.json
+        // Synthesize all data with OpenAI
+        let synthesis;
+        try {
+            synthesis = await synthesizer.synthesize(product, sources, expectations);
+        } catch (error) {
+            console.error('Synthesis error:', error.message);
+            // Fallback to basic response if synthesis fails
+            synthesis = {
+                synthesis: 'Unable to synthesize data due to an error. Please try again.',
+                finishReason: 'error',
+                sourcesUsed: []
+            };
+        }
+
+        // Format response similar to original structure
+        const recommendationData = {
+            responseMessage: synthesis.synthesis,
+            reason: synthesis.finishReason,
+            sourcesUsed: synthesis.sourcesUsed
+        };
+
+        // Save all results to data.json
         const data = await readDataFile();
         data.reviews.push({
             timestamp: new Date().toISOString(),
@@ -335,17 +361,24 @@ app.post('/api/combined', async (req, res) => {
             email,
             expectations: expectations || '',
             recommendation: recommendationData,
-            searchResults
+            sources: {
+                reddit: sources.reddit,
+                youtube: sources.youtube,
+                bestbuy: sources.bestbuy,
+                twitter: sources.twitter,
+                google: sources.google
+            }
         });
         await writeDataFile(data);
 
         res.json({
             recommendation: recommendationData,
-            search: searchResults
+            sources: sources,
+            search: sources.google?.articles || [] // For backward compatibility
         });
     } catch (error) {
-        console.error('Error:', error.response?.data || error.message);
-        res.status(500).json({ error: 'Something went wrong with the request' });
+        console.error('Combined endpoint error:', error.response?.data || error.message);
+        res.status(500).json({ error: 'Something went wrong with the multi-source analysis' });
     }
 });
 
@@ -399,7 +432,7 @@ app.get('/api/recent-reviews', async (req, res) => {
         const data = await readDataFile();
         // Sort by timestamp descending and get last 4
         const sorted = (data.reviews || []).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        const last4 = sorted.slice(0, 4);
+        const last4 = sorted.slice(0, 6);
         res.json({ reviews: last4 });
     } catch (error) {
         console.error('Error fetching recent reviews:', error);

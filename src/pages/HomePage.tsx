@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { sendProductAndSearchRequest, sendEmail, fetchRecentReviews } from '../resources/api-request'
+import SourceCard from '../components/SourceCard'
 import '../styles/HomePage.css'
 
 const HomePage: React.FC = () => {
@@ -15,6 +16,8 @@ const HomePage: React.FC = () => {
     const [finalResponse, setFinalResponse] = useState('')
     const [searchResults, setSearchResults] = useState<any[]>([])
     const [recentReviews, setRecentReviews] = useState<any[]>([])
+    const [sources, setSources] = useState<any>(null)
+    const [sourcesUsed, setSourcesUsed] = useState<string[]>([])
 
     useEffect(() => {
         const loadRecentReviews = async () => {
@@ -43,6 +46,8 @@ const HomePage: React.FC = () => {
             setErrorMessage('')
             setLengthIssueText('')
             setSearchResults([])
+            setSources(null)
+            setSourcesUsed([])
 
             const result = await sendProductAndSearchRequest('', product, 'gpt-4.1', email, expectations)
 
@@ -50,10 +55,17 @@ const HomePage: React.FC = () => {
 
             if (result.recommendation) {
                 setFinalResponse(result.recommendation.responseMessage)
+                if (result.recommendation.sourcesUsed) {
+                    setSourcesUsed(result.recommendation.sourcesUsed)
+                }
             }
             if (result.search) {
                 console.log('Received search results:', result.search);
                 setSearchResults(result.search)
+            }
+            if (result.sources) {
+                console.log('Received sources:', result.sources);
+                setSources(result.sources)
             }
         } catch (error: any) {
             setErrorMessage(error.message)
@@ -180,16 +192,16 @@ const HomePage: React.FC = () => {
                 {finalResponse && (
                     <div className="o-response-wrapper">
                         <div className="o-action-buttons">
-                            <button 
-                                role="button" 
-                                className="u-button o-copy-button" 
+                            <button
+                                role="button"
+                                className="u-button o-copy-button"
                                 onClick={() => navigator.clipboard.writeText(finalResponse)}
                             >
                                 Copy
                             </button>
-                            <button 
-                                role="button" 
-                                className="u-button o-email-button" 
+                            <button
+                                role="button"
+                                className="u-button o-email-button"
                                 onClick={handleSendEmail}
                                 disabled={isSendingEmail}
                             >
@@ -201,7 +213,13 @@ const HomePage: React.FC = () => {
                                 {emailSuccess}
                             </p>
                         )}
+                        {sourcesUsed.length > 0 && (
+                            <div className="o-sources-badge">
+                                <strong>Sources analyzed:</strong> {sourcesUsed.join(', ')}
+                            </div>
+                        )}
                         <div className="o-response-container">
+                            <h3>AI Synthesis</h3>
                             <ReactMarkdown
                                 components={{
                                     a: (props) => (
@@ -210,6 +228,38 @@ const HomePage: React.FC = () => {
                                 }}
                             >{finalResponse}</ReactMarkdown>
                         </div>
+                        {sources && (
+                            <div className="o-sources-container">
+                                <h3>Data Sources</h3>
+                                <div className="o-sources-grid">
+                                    <SourceCard
+                                        source={sources.reddit}
+                                        icon="🗨️"
+                                        title="Reddit Discussions"
+                                    />
+                                    <SourceCard
+                                        source={sources.youtube}
+                                        icon="🎥"
+                                        title="YouTube Reviews"
+                                    />
+                                    <SourceCard
+                                        source={sources.bestbuy}
+                                        icon="⭐"
+                                        title="Best Buy Reviews"
+                                    />
+                                    <SourceCard
+                                        source={sources.twitter}
+                                        icon="𝕏"
+                                        title="X (Twitter) Opinions"
+                                    />
+                                    <SourceCard
+                                        source={sources.google}
+                                        icon="📰"
+                                        title="Expert Reviews"
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
                 {lengthIssueText && (
