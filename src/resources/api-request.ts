@@ -8,6 +8,13 @@ interface ResponseObject {
     sourcesUsed?: string[]
 }
 
+interface CombinedResponseData {
+    error?: any
+    recommendation?: ResponseObject
+    search?: any[]
+    sources?: any
+}
+
 const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'
 
 const sendCompletionURL = `${baseURL}/recommend`
@@ -44,7 +51,7 @@ export const sendProductAndSearchRequest = async (
   selectedModel: string,
   email: string,
   expectations?: string
-): Promise<{ error?: any; recommendation?: ResponseObject; search?: any[]; sources?: any }> => {
+): Promise<CombinedResponseData> => {
   try {
     const response = await CustomAxios.post(sendCombinedURL, {
       product: request,
