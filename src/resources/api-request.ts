@@ -5,6 +5,7 @@ type APIResponse = AxiosResponse
 interface ResponseObject {
     responseMessage: string
     reason?: string
+    sourcesUsed?: string[]
 }
 
 const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'
@@ -43,19 +44,20 @@ export const sendProductAndSearchRequest = async (
   selectedModel: string,
   email: string,
   expectations?: string
-): Promise<{ error?: any; recommendation?: ResponseObject; search?: any[] }> => {
+): Promise<{ error?: any; recommendation?: ResponseObject; search?: any[]; sources?: any }> => {
   try {
-    const response = await CustomAxios.post(sendCombinedURL, { 
+    const response = await CustomAxios.post(sendCombinedURL, {
       product: request,
       email: email,
       expectations: expectations || ''
     }, {
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
     });
-    
+
     return {
       recommendation: response.data.recommendation,
-      search: response.data.search
+      search: response.data.search,
+      sources: response.data.sources
     }
   } catch (error: any) {
     return { error: error.response?.data || error.message }
