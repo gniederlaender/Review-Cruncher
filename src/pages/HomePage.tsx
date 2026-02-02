@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { sendProductAndSearchRequest, sendEmail, fetchRecentReviews } from '../resources/api-request'
+import { sendProductAndSearchRequest, sendEmail, fetchRecentReviews, ScorecardItem } from '../resources/api-request'
 import SourceCard from '../components/SourceCard'
+import SentimentScorecard from '../components/SentimentScorecard'
+import AnalysisSection from '../components/AnalysisSection'
 import '../styles/HomePage.css'
 
 const HomePage: React.FC = () => {
@@ -18,6 +20,10 @@ const HomePage: React.FC = () => {
     const [recentReviews, setRecentReviews] = useState<any[]>([])
     const [sources, setSources] = useState<any>(null)
     const [sourcesUsed, setSourcesUsed] = useState<string[]>([])
+    const [scorecard, setScorecard] = useState<ScorecardItem[]>([])
+    const [keyTakeaways, setKeyTakeaways] = useState<{ [key: string]: string[] }>({})
+    const [consensus, setConsensus] = useState<string[]>([])
+    const [divergence, setDivergence] = useState<string[]>([])
 
     useEffect(() => {
         const loadRecentReviews = async () => {
@@ -48,6 +54,10 @@ const HomePage: React.FC = () => {
             setSearchResults([])
             setSources(null)
             setSourcesUsed([])
+            setScorecard([])
+            setKeyTakeaways({})
+            setConsensus([])
+            setDivergence([])
 
             const result = await sendProductAndSearchRequest('', product, 'gpt-4.1', email, expectations)
 
@@ -57,6 +67,18 @@ const HomePage: React.FC = () => {
                 setFinalResponse(result.recommendation.responseMessage)
                 if (result.recommendation.sourcesUsed) {
                     setSourcesUsed(result.recommendation.sourcesUsed)
+                }
+                if (result.recommendation.scorecard) {
+                    setScorecard(result.recommendation.scorecard)
+                }
+                if (result.recommendation.keyTakeaways) {
+                    setKeyTakeaways(result.recommendation.keyTakeaways)
+                }
+                if (result.recommendation.consensus) {
+                    setConsensus(result.recommendation.consensus)
+                }
+                if (result.recommendation.divergence) {
+                    setDivergence(result.recommendation.divergence)
                 }
             }
             if (result.search) {
@@ -218,8 +240,22 @@ const HomePage: React.FC = () => {
                                 <strong>Sources analyzed:</strong> {sourcesUsed.join(', ')}
                             </div>
                         )}
+
+                        {/* Section 1: Sentiment Scorecard */}
+                        {scorecard.length > 0 && (
+                            <SentimentScorecard scorecard={scorecard} />
+                        )}
+
+                        {/* Section 2 & 3: Key Takeaways, Consensus, Divergence */}
+                        <AnalysisSection
+                            keyTakeaways={keyTakeaways}
+                            consensus={consensus}
+                            divergence={divergence}
+                        />
+
+                        {/* Section 4: Final Synthesis */}
                         <div className="o-response-container">
-                            <h3>AI Synthesis</h3>
+                            <h3>📋 Final Synthesis</h3>
                             <ReactMarkdown
                                 components={{
                                     a: (props) => (

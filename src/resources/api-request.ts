@@ -2,10 +2,24 @@ import { AxiosResponse } from 'axios'
 import CustomAxios from '../utility/customAxios'
 
 type APIResponse = AxiosResponse
+
+export interface ScorecardItem {
+    source: string
+    name: string
+    score: number | null
+    sampleSize: number
+    unit: string
+    available: boolean
+}
+
 interface ResponseObject {
     responseMessage: string
     reason?: string
     sourcesUsed?: string[]
+    scorecard?: ScorecardItem[]
+    keyTakeaways?: { [key: string]: string[] }
+    consensus?: string[]
+    divergence?: string[]
 }
 
 interface CombinedResponseData {

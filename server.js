@@ -342,15 +342,23 @@ app.post('/api/combined', async (req, res) => {
             synthesis = {
                 synthesis: 'Unable to synthesize data due to an error. Please try again.',
                 finishReason: 'error',
-                sourcesUsed: []
+                sourcesUsed: [],
+                scorecard: [],
+                keyTakeaways: {},
+                consensus: [],
+                divergence: []
             };
         }
 
-        // Format response similar to original structure
+        // Format response with structured data
         const recommendationData = {
             responseMessage: synthesis.synthesis,
             reason: synthesis.finishReason,
-            sourcesUsed: synthesis.sourcesUsed
+            sourcesUsed: synthesis.sourcesUsed,
+            scorecard: synthesis.scorecard || [],
+            keyTakeaways: synthesis.keyTakeaways || {},
+            consensus: synthesis.consensus || [],
+            divergence: synthesis.divergence || []
         };
 
         // Save all results to data.json

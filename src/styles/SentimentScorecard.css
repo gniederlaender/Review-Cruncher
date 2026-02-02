@@ -1,0 +1,132 @@
+.o-sentiment-scorecard {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.o-sentiment-scorecard h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.5rem;
+    color: #2c3e50;
+    text-align: center;
+}
+
+.o-scorecard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.o-scorecard-item {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.o-scorecard-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.o-scorecard-item.unavailable {
+    opacity: 0.5;
+    background: #f8f9fa;
+}
+
+.o-scorecard-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.o-source-icon {
+    font-size: 1.5rem;
+}
+
+.o-source-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+.o-scorecard-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.o-score-bar-container {
+    width: 100%;
+    height: 32px;
+    background: #e9ecef;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+}
+
+.o-score-bar {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.75rem;
+    border-radius: 16px;
+    transition: width 0.6s ease-out;
+    position: relative;
+}
+
+.o-score-bar.green {
+    background: linear-gradient(90deg, #52c234 0%, #6dd400 100%);
+}
+
+.o-score-bar.yellow {
+    background: linear-gradient(90deg, #f39c12 0%, #f1c40f 100%);
+}
+
+.o-score-bar.red {
+    background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.o-score-bar.grey {
+    background: #95a5a6;
+}
+
+.o-score-value {
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.o-sample-size {
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-align: right;
+}
+
+.o-no-data {
+    color: #adb5bd;
+    font-style: italic;
+    text-align: center;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .o-scorecard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .o-sentiment-scorecard {
+        padding: 1rem;
+    }
+
+    .o-sentiment-scorecard h3 {
+        font-size: 1.25rem;
+    }
+}
