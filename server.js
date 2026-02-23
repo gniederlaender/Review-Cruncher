@@ -48,7 +48,10 @@ const redditSource = new RedditSource(
 );
 const youtubeSource = new YouTubeSource(process.env.YOUTUBE_API_KEY || GOOGLE_API_KEY);
 const bestbuySource = new BestBuySource(process.env.BESTBUY_API_KEY);
-const twitterSource = new TwitterSource(process.env.TWITTER_BEARER_TOKEN);
+const twitterSource = new TwitterSource(
+    process.env.TWITTER_AUTH_TOKEN,
+    process.env.TWITTER_CT0
+);
 const synthesizer = new OpinionSynthesizer(OPENAI_API_KEY);
 
 // Create a transporter object using easyname.com SMTP

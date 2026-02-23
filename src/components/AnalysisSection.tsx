@@ -8,7 +8,16 @@ interface AnalysisSectionProps {
 }
 
 const AnalysisSection: React.FC<AnalysisSectionProps> = ({ keyTakeaways, consensus, divergence }) => {
-    const [expandedSources, setExpandedSources] = useState<{ [key: string]: boolean }>({})
+    // Start with all sources expanded for better visibility
+    const [expandedSources, setExpandedSources] = useState<{ [key: string]: boolean }>(() => {
+        const initial: { [key: string]: boolean } = {}
+        if (keyTakeaways) {
+            Object.keys(keyTakeaways).forEach(key => {
+                initial[key] = true
+            })
+        }
+        return initial
+    })
 
     const toggleSource = (source: string) => {
         setExpandedSources(prev => ({
@@ -17,17 +26,17 @@ const AnalysisSection: React.FC<AnalysisSectionProps> = ({ keyTakeaways, consens
         }))
     }
 
-    const getSourceDisplayName = (key: string): string => {
-        const names: { [key: string]: string } = {
-            'reddit': '🗨️ Reddit',
-            'youtube': '🎥 YouTube',
-            'bestbuy': '⭐ Best Buy',
-            'xtwitter': '𝕏 X/Twitter',
-            'twitter': '𝕏 X/Twitter',
-            'googlesearch': '📰 Google Search',
-            'google': '📰 Google Search'
+    const getSourceInfo = (key: string): { name: string; icon: string; color: string } => {
+        const sources: { [key: string]: { name: string; icon: string; color: string } } = {
+            'reddit': { name: 'Reddit', icon: '🗨️', color: '#ff4500' },
+            'youtube': { name: 'YouTube', icon: '🎥', color: '#ff0000' },
+            'bestbuy': { name: 'Best Buy', icon: '⭐', color: '#0046be' },
+            'xtwitter': { name: 'X/Twitter', icon: '𝕏', color: '#000000' },
+            'twitter': { name: 'X/Twitter', icon: '𝕏', color: '#000000' },
+            'googlesearch': { name: 'Google Search', icon: '📰', color: '#4285f4' },
+            'google': { name: 'Google Search', icon: '📰', color: '#4285f4' }
         }
-        return names[key] || key
+        return sources[key] || { name: key, icon: '📊', color: '#6c757d' }
     }
 
     const hasContent = keyTakeaways && Object.keys(keyTakeaways).length > 0
@@ -43,35 +52,40 @@ const AnalysisSection: React.FC<AnalysisSectionProps> = ({ keyTakeaways, consens
                 <div className="o-key-takeaways">
                     <h3>🔍 Key Takeaways by Source</h3>
                     <div className="o-takeaways-grid">
-                        {Object.entries(keyTakeaways).map(([source, points]) => (
-                            <div key={source} className="o-takeaway-card">
-                                <div
-                                    className="o-takeaway-header"
-                                    onClick={() => toggleSource(source)}
-                                    role="button"
-                                    tabIndex={0}
-                                    onKeyPress={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            toggleSource(source)
-                                        }
-                                    }}
-                                >
-                                    <span className="o-source-title">{getSourceDisplayName(source)}</span>
-                                    <span className="o-expand-icon">
-                                        {expandedSources[source] ? '▼' : '▶'}
-                                    </span>
-                                </div>
-                                {expandedSources[source] && (
-                                    <div className="o-takeaway-content">
-                                        <ul>
-                                            {points.map((point, idx) => (
-                                                <li key={idx}>{point}</li>
-                                            ))}
-                                        </ul>
+                        {Object.entries(keyTakeaways).map(([source, points]) => {
+                            const sourceInfo = getSourceInfo(source)
+                            return (
+                                <div key={source} className="o-takeaway-card" style={{ borderLeftColor: sourceInfo.color }}>
+                                    <div
+                                        className="o-takeaway-header"
+                                        onClick={() => toggleSource(source)}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyPress={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                toggleSource(source)
+                                            }
+                                        }}
+                                    >
+                                        <span className="o-source-badge" style={{ backgroundColor: sourceInfo.color }}>
+                                            {sourceInfo.icon} {sourceInfo.name}
+                                        </span>
+                                        <span className="o-expand-icon">
+                                            {expandedSources[source] !== false ? '▼' : '▶'}
+                                        </span>
                                     </div>
-                                )}
-                            </div>
-                        ))}
+                                    {expandedSources[source] !== false && (
+                                        <div className="o-takeaway-content">
+                                            <ul>
+                                                {points.map((point, idx) => (
+                                                    <li key={idx}>{point}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
             )}

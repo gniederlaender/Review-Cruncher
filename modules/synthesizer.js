@@ -326,6 +326,9 @@ class OpinionSynthesizer {
         prompt += `- [Divergence point 2]\n\n`;
 
         prompt += `## FINAL SYNTHESIS\n\n`;
+        prompt += `**Product Name**\n\n`;
+        prompt += `${product}\n\n`;
+        prompt += `**Price Range:** [Provide typical price range for this product, e.g., "$40,000 - $55,000" or "€800 - €1,200"]\n\n`;
         prompt += `**Overall Sentiment:** [Positive/Mixed/Negative]\n\n`;
         prompt += `**Key Strengths:**\n`;
         prompt += `1. [Strength 1 with source citations]\n`;
@@ -333,6 +336,11 @@ class OpinionSynthesizer {
         prompt += `**Key Concerns:**\n`;
         prompt += `1. [Concern 1 with source citations]\n`;
         prompt += `2. [Concern 2 with source citations]\n\n`;
+        prompt += `**Product Alternatives:**\n\n`;
+        prompt += `Consider these 3 viable alternatives:\n`;
+        prompt += `1. **[Alternative 1 Name]** - [Brief 1-line description of why it's a good alternative]\n`;
+        prompt += `2. **[Alternative 2 Name]** - [Brief 1-line description of why it's a good alternative]\n`;
+        prompt += `3. **[Alternative 3 Name]** - [Brief 1-line description of why it's a good alternative]\n\n`;
         prompt += `**Recommendation:** [Clear verdict with reasoning. Address user expectations if provided.]\n\n`;
         prompt += `**Confidence Level:** [High/Medium/Low based on data quality and source consensus]\n\n`;
 

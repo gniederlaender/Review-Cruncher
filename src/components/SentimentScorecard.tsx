@@ -53,12 +53,12 @@ const SentimentScorecard: React.FC<SentimentScorecardProps> = ({ scorecard }) =>
                             <span className="o-source-name">{item.name}</span>
                         </div>
                         <div className="o-scorecard-body">
-                            {item.available && item.score !== null ? (
+                            {item.available && item.score !== null && item.score !== undefined ? (
                                 <>
                                     <div className="o-score-bar-container">
                                         <div
                                             className={`o-score-bar ${getScoreColor(item.score)}`}
-                                            style={{ width: `${getScoreBarWidth(item.score)}%` }}
+                                            style={{ width: `${Math.max(10, getScoreBarWidth(item.score))}%` }}
                                         >
                                             <span className="o-score-value">
                                                 {item.score > 0 ? '+' : ''}{item.score.toFixed(1)}
@@ -69,9 +69,16 @@ const SentimentScorecard: React.FC<SentimentScorecardProps> = ({ scorecard }) =>
                                         {formatSampleSize(item.sampleSize, item.unit)}
                                     </div>
                                 </>
+                            ) : item.available ? (
+                                <div className="o-no-score-available">
+                                    <span className="o-available-badge">✓ Available</span>
+                                    <div className="o-sample-size">
+                                        {formatSampleSize(item.sampleSize, item.unit)}
+                                    </div>
+                                </div>
                             ) : (
                                 <div className="o-no-data">
-                                    {item.available ? 'no score' : 'no data available'}
+                                    no data available
                                 </div>
                             )}
                         </div>

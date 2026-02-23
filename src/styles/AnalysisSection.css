@@ -22,13 +22,14 @@
 .o-takeaway-card {
     background: white;
     border: 2px solid #e9ecef;
+    border-left: 4px solid #6c757d;
     border-radius: 8px;
     overflow: hidden;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .o-takeaway-card:hover {
-    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .o-takeaway-header {
@@ -49,6 +50,18 @@
 .o-takeaway-header:focus {
     outline: 2px solid #007bff;
     outline-offset: -2px;
+}
+
+.o-source-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .o-source-title {

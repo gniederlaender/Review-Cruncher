@@ -1,53 +1,60 @@
 // modules/sources/twitter.js
-const axios = require('axios');
+const { execSync } = require('child_process');
 
 /**
- * X (Twitter) API Integration Module
- * Searches X/Twitter for product opinions and discussions
- * Note: X API requires paid subscription (Basic tier: $100/month minimum)
+ * X (Twitter) Integration Module using Bird CLI
+ * Searches X/Twitter for product opinions using cookie-based auth
+ * No paid API subscription required - uses bird CLI with auth_token/ct0 cookies
  */
 
 class TwitterSource {
-    constructor(bearerToken) {
-        this.bearerToken = bearerToken;
-        this.baseUrl = 'https://api.twitter.com/2';
+    constructor(authToken, ct0) {
+        this.authToken = authToken || process.env.TWITTER_AUTH_TOKEN;
+        this.ct0 = ct0 || process.env.TWITTER_CT0;
     }
 
     /**
-     * Search X/Twitter for product discussions
+     * Search X/Twitter for product discussions using bird CLI
      * @param {string} product - Product name to search for
      * @returns {Promise<Object>} Formatted Twitter data
      */
     async search(product) {
         try {
-            if (!this.bearerToken) {
+            if (!this.authToken || !this.ct0) {
                 return {
                     source: 'twitter',
                     available: false,
-                    error: 'Twitter API key not configured',
+                    error: 'Twitter cookies not configured (TWITTER_AUTH_TOKEN and TWITTER_CT0 required)',
                     tweets: [],
-                    summary: 'Twitter data unavailable (API key required)'
+                    summary: 'Twitter data unavailable (cookies required)'
                 };
             }
 
-            // Search for recent tweets about the product
-            const searchResponse = await axios.get(`${this.baseUrl}/tweets/search/recent`, {
-                params: {
-                    query: `"${product}" (review OR opinion OR experience OR thoughts) -is:retweet lang:en`,
-                    max_results: 20,
-                    'tweet.fields': 'created_at,public_metrics,author_id,context_annotations',
-                    'user.fields': 'username,name,verified',
-                    'expansions': 'author_id'
-                },
-                headers: {
-                    'Authorization': `Bearer ${this.bearerToken}`
+            // Build search query for product reviews
+            const query = `${product} (review OR opinion OR experience OR thoughts)`;
+            
+            // Call bird CLI with cookie auth
+            const cmd = `bird search "${query.replace(/"/g, '\\"')}" -n 15 --json --auth-token "${this.authToken}" --ct0 "${this.ct0}" 2>/dev/null`;
+            
+            let output;
+            try {
+                output = execSync(cmd, { 
+                    encoding: 'utf8',
+                    timeout: 30000,
+                    maxBuffer: 1024 * 1024
+                });
+            } catch (execError) {
+                // bird CLI might return non-zero even with partial results
+                if (execError.stdout) {
+                    output = execError.stdout;
+                } else {
+                    throw execError;
                 }
-            });
+            }
 
-            const tweets = searchResponse.data.data || [];
-            const users = searchResponse.data.includes?.users || [];
+            const tweets = JSON.parse(output || '[]');
 
-            if (tweets.length === 0) {
+            if (!tweets || tweets.length === 0) {
                 return {
                     source: 'twitter',
                     available: true,
@@ -56,24 +63,21 @@ class TwitterSource {
                 };
             }
 
-            // Combine tweet data with user information
-            const formattedTweets = tweets.map(tweet => {
-                const author = users.find(u => u.id === tweet.author_id);
-                return {
-                    text: tweet.text,
-                    author: author ? author.name : 'Unknown',
-                    username: author ? author.username : 'unknown',
-                    verified: author ? author.verified : false,
-                    createdAt: tweet.created_at,
-                    metrics: {
-                        likes: tweet.public_metrics.like_count,
-                        retweets: tweet.public_metrics.retweet_count,
-                        replies: tweet.public_metrics.reply_count,
-                        impressions: tweet.public_metrics.impression_count || 0
-                    },
-                    url: `https://twitter.com/${author?.username}/status/${tweet.id}`
-                };
-            });
+            // Format tweets to match expected structure
+            const formattedTweets = tweets.map(tweet => ({
+                text: tweet.text,
+                author: tweet.author?.name || 'Unknown',
+                username: tweet.author?.username || 'unknown',
+                verified: tweet.author?.verified || false,
+                createdAt: tweet.createdAt,
+                metrics: {
+                    likes: tweet.likeCount || 0,
+                    retweets: tweet.retweetCount || 0,
+                    replies: tweet.replyCount || 0,
+                    impressions: 0
+                },
+                url: `https://twitter.com/${tweet.author?.username}/status/${tweet.id}`
+            }));
 
             // Sort by engagement (likes + retweets)
             formattedTweets.sort((a, b) => {
@@ -85,7 +89,7 @@ class TwitterSource {
             // Calculate aggregate metrics
             const totalLikes = formattedTweets.reduce((sum, t) => sum + t.metrics.likes, 0);
             const totalRetweets = formattedTweets.reduce((sum, t) => sum + t.metrics.retweets, 0);
-            const avgLikes = Math.round(totalLikes / formattedTweets.length);
+            const avgLikes = formattedTweets.length > 0 ? Math.round(totalLikes / formattedTweets.length) : 0;
             const verifiedCount = formattedTweets.filter(t => t.verified).length;
 
             // Simple sentiment analysis based on engagement
@@ -108,31 +112,23 @@ class TwitterSource {
                 summary: this._generateSummary(formattedTweets, totalLikes, totalRetweets, verifiedCount)
             };
         } catch (error) {
-            console.error('Twitter search error:', error.response?.data || error.message);
+            console.error('Twitter search error:', error.message);
 
-            // Handle specific error cases
-            if (error.response?.status === 401) {
+            // Check for common errors
+            if (error.message.includes('401') || error.message.includes('Unauthorized')) {
                 return {
                     source: 'twitter',
                     available: false,
-                    error: 'Invalid Twitter API credentials',
+                    error: 'Twitter cookies expired - please refresh auth_token and ct0',
                     tweets: [],
-                    summary: 'Twitter data unavailable (authentication failed)'
-                };
-            } else if (error.response?.status === 429) {
-                return {
-                    source: 'twitter',
-                    available: false,
-                    error: 'Twitter API rate limit exceeded',
-                    tweets: [],
-                    summary: 'Twitter data temporarily unavailable (rate limit)'
+                    summary: 'Twitter data unavailable (cookies expired)'
                 };
             }
 
             return {
                 source: 'twitter',
                 available: false,
-                error: 'Failed to fetch Twitter data',
+                error: 'Failed to fetch Twitter data: ' + error.message,
                 tweets: [],
                 summary: 'Twitter data unavailable'
             };
