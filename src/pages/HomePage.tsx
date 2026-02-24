@@ -4,6 +4,7 @@ import { sendProductAndSearchRequest, sendEmail, fetchRecentReviews, ScorecardIt
 import SourceCard from '../components/SourceCard'
 import SentimentScorecard from '../components/SentimentScorecard'
 import AnalysisSection from '../components/AnalysisSection'
+import SentimentExpander from '../components/SentimentExpander'
 import '../styles/HomePage.css'
 
 const HomePage: React.FC = () => {
@@ -133,6 +134,25 @@ const HomePage: React.FC = () => {
         }
     }
 
+    /**
+     * Extract overall sentiment from markdown text
+     */
+    const extractOverallSentiment = (text: string): string | null => {
+        const match = text.match(/\*\*Overall Sentiment:\*\*\s*([^\n]+)/i)
+        return match ? match[1].trim() : null
+    }
+
+    /**
+     * Remove overall sentiment line from markdown to avoid duplication
+     */
+    const removeOverallSentimentLine = (text: string): string => {
+        return text.replace(/\*\*Overall Sentiment:\*\*[^\n]+\n*/i, '')
+    }
+
+    // Extract sentiment and prepare modified response
+    const overallSentiment = extractOverallSentiment(finalResponse)
+    const modifiedResponse = overallSentiment ? removeOverallSentimentLine(finalResponse) : finalResponse
+
     return (
         <div className="o-page-container">
             <div className="o-claim-banner">
@@ -256,13 +276,19 @@ const HomePage: React.FC = () => {
                         {/* Section 4: Final Synthesis */}
                         <div className="o-response-container">
                             <h3>📋 Final Synthesis</h3>
+                            {overallSentiment && scorecard.length > 0 && (
+                                <SentimentExpander
+                                    overallSentiment={overallSentiment}
+                                    scorecard={scorecard}
+                                />
+                            )}
                             <ReactMarkdown
                                 components={{
                                     a: (props) => (
                                         <a href={props.href} target="_blank" rel="noopener noreferrer">{props.children}</a>
                                     )
                                 }}
-                            >{finalResponse}</ReactMarkdown>
+                            >{modifiedResponse}</ReactMarkdown>
                         </div>
                         {sources && (
                             <div className="o-sources-container">
