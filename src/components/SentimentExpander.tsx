@@ -55,7 +55,7 @@ const SentimentExpander: React.FC<SentimentExpanderProps> = ({ overallSentiment,
 
             {isExpanded && sourcesWithScores.length > 0 && (
                 <div className="o-sentiment-breakdown">
-                    <h4>📊 Source Sentiment Overview</h4>
+                    <h4>📊 Product Sentiment by Platform</h4>
                     <div className="o-sentiment-chart">
                         {sourcesWithScores.map((item, idx) => (
                             <div key={idx} className="o-sentiment-bar-container">

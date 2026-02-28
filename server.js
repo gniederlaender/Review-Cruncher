@@ -78,22 +78,198 @@ function generateEmailContent(product, recommendation, searchResults) {
         searchResults: searchResults
     });
 
-    // Convert markdown to HTML
-    const recommendationHtml = recommendation
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
-        .replace(/\n/g, '<br>') // Line breaks
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text again for nested cases
-        .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic text
-        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" style="color: #2563eb;">$1</a>'); // Links
+    // Extract structured data from markdown
+    const extractProductName = (text) => {
+        const match = text.match(/\*\*Product Name\*\*\s*\n*\s*([^\n]+)/i);
+        return match ? match[1].trim() : product;
+    };
+
+    const extractPriceRange = (text) => {
+        const match = text.match(/\*\*Price Range:\*\*\s*([^\n]+)/i);
+        return match ? match[1].trim() : '';
+    };
+
+    const extractAlternatives = (text) => {
+        const alternatives = [];
+        const match = text.match(/\*\*Product Alternatives:\*\*\s*\n*([\s\S]*?)(?=\*\*Recommendation:|$)/i);
+        if (match) {
+            const altText = match[1];
+            const lines = altText.split('\n').filter(line => line.trim().match(/^\d+\.\s+\*\*/));
+            lines.forEach(line => {
+                const cleaned = line.replace(/^\d+\.\s+/, '').trim();
+                if (cleaned) alternatives.push(cleaned);
+            });
+        }
+        return alternatives;
+    };
+
+    const extractOverallSentiment = (text) => {
+        const match = text.match(/\*\*Overall Sentiment:\*\*\s*([^\n]+)/i);
+        return match ? match[1].trim() : null;
+    };
+
+    const extractRecommendation = (text) => {
+        const match = text.match(/\*\*Recommendation:\*\*\s*([\s\S]*?)(?=\*\*Confidence Level:|$)/i);
+        return match ? match[1].trim() : '';
+    };
+
+    const extractConfidenceLevel = (text) => {
+        const match = text.match(/\*\*Confidence Level:\*\*\s*([^\n]+)/i);
+        return match ? match[1].trim() : '';
+    };
+
+    const extractConsensus = (text) => {
+        const points = [];
+        const match = text.match(/\*\*Cross-Platform Consensus:\*\*\s*\n*([\s\S]*?)(?=\*\*Notable Divergence:|$)/i);
+        if (match) {
+            const lines = match[1].split('\n').filter(line => line.trim().startsWith('-'));
+            lines.forEach(line => {
+                points.push(line.replace(/^-\s*/, '').trim());
+            });
+        }
+        return points;
+    };
+
+    const extractDivergence = (text) => {
+        const points = [];
+        const match = text.match(/\*\*Notable Divergence:\*\*\s*\n*([\s\S]*?)(?=\*\*Key Takeaways|$)/i);
+        if (match) {
+            const lines = match[1].split('\n').filter(line => line.trim().startsWith('-'));
+            lines.forEach(line => {
+                points.push(line.replace(/^-\s*/, '').trim());
+            });
+        }
+        return points;
+    };
+
+    // Convert markdown to HTML for recommendation text
+    const markdownToHtml = (text) => {
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" style="color: #2563eb;">$1</a>');
+    };
+
+    // Extract all parts
+    const productName = extractProductName(recommendation);
+    const priceRange = extractPriceRange(recommendation);
+    const alternatives = extractAlternatives(recommendation);
+    const overallSentiment = extractOverallSentiment(recommendation);
+    const recommendationText = extractRecommendation(recommendation);
+    const confidenceLevel = extractConfidenceLevel(recommendation);
+    const consensus = extractConsensus(recommendation);
+    const divergence = extractDivergence(recommendation);
+
+    // Build alternatives HTML
+    let alternativesHtml = '';
+    if (alternatives.length > 0) {
+        alternativesHtml = `
+            <div style="margin-top: 15px;">
+                <strong style="color: #64748b;">Alternatives:</strong>
+                <ol style="margin: 10px 0 0 0; padding-left: 20px; color: #1e293b;">
+                    ${alternatives.map(alt => `<li style="margin-bottom: 8px;">${markdownToHtml(alt)}</li>`).join('')}
+                </ol>
+            </div>
+        `;
+    }
+
+    // Build consensus HTML
+    let consensusHtml = '';
+    if (consensus.length > 0) {
+        consensusHtml = `
+            <div style="margin-top: 20px;">
+                <h4 style="color: #1e293b; margin: 0 0 10px 0; font-size: 16px;">Cross-Platform Consensus</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #1e293b;">
+                    ${consensus.map(point => `<li style="margin-bottom: 8px;">${markdownToHtml(point)}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    // Build divergence HTML
+    let divergenceHtml = '';
+    if (divergence.length > 0) {
+        divergenceHtml = `
+            <div style="margin-top: 20px;">
+                <h4 style="color: #92400e; margin: 0 0 10px 0; font-size: 16px;">Notable Divergence</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #92400e;">
+                    ${divergence.map(point => `<li style="margin-bottom: 8px;">${markdownToHtml(point)}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    // Build confidence badge HTML
+    let confidenceHtml = '';
+    if (confidenceLevel) {
+        const confidenceColors = {
+            high: { bg: '#dcfce7', text: '#166534' },
+            medium: { bg: '#fef3c7', text: '#92400e' },
+            low: { bg: '#fee2e2', text: '#991b1b' }
+        };
+        const colors = confidenceColors[confidenceLevel.toLowerCase()] || confidenceColors.medium;
+        confidenceHtml = `
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                <span style="font-weight: 600; color: #64748b;">Confidence Level:</span>
+                <span style="margin-left: 10px; padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 14px; text-transform: uppercase; background-color: ${colors.bg}; color: ${colors.text};">
+                    ${confidenceLevel}
+                </span>
+            </div>
+        `;
+    }
+
+    // Section styling
+    const sectionStyle = 'margin: 20px 0; padding: 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;';
+    const sectionTitleStyle = 'margin: 0 0 15px 0; font-size: 18px; font-weight: 600; color: #1e293b;';
 
     const emailContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #2563eb;">Review Cruncher Report</h1>
-            <h2 style="color: #1e293b;">${product}</h2>
-            <div style="margin: 20px 0; padding: 20px; background: #f8fafc; border-radius: 8px;">
-                ${recommendationHtml}
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc; padding: 20px;">
+            <h1 style="color: #2563eb; text-align: center; margin-bottom: 10px;">Review Cruncher Report</h1>
+            <p style="color: #64748b; text-align: center; margin-bottom: 30px;">AI-powered product analysis from multiple sources</p>
+
+            <!-- Section 1: Product Snapshot -->
+            <div style="${sectionStyle}">
+                <h3 style="${sectionTitleStyle}">📦 Product Snapshot</h3>
+                <div style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 10px;">${productName}</div>
+                ${priceRange ? `<div style="color: #64748b; margin-bottom: 15px;"><strong>Price Range:</strong> ${priceRange}</div>` : ''}
+                ${alternativesHtml}
             </div>
-            <p style="color: #64748b; font-size: 14px; margin-top: 30px;">
+
+            <!-- Section 2: Product Sentiment -->
+            ${overallSentiment ? `
+            <div style="${sectionStyle}">
+                <h3 style="${sectionTitleStyle}">📊 Product Sentiment</h3>
+                <div style="font-size: 16px; color: #1e293b; margin-bottom: 15px;">
+                    <strong>Overall Sentiment:</strong> ${overallSentiment}
+                </div>
+                ${consensusHtml}
+                ${divergenceHtml}
+            </div>
+            ` : ''}
+
+            <!-- Section 3: Final Synthesis -->
+            ${recommendationText ? `
+            <div style="${sectionStyle}">
+                <h3 style="${sectionTitleStyle}">🎯 Final Synthesis</h3>
+                <div style="line-height: 1.8; color: #1e293b;">
+                    ${markdownToHtml(recommendationText)}
+                </div>
+                ${confidenceHtml}
+            </div>
+            ` : ''}
+
+            <!-- Section 4: Data Sources -->
+            <div style="${sectionStyle}">
+                <h3 style="${sectionTitleStyle}">📚 Data Sources</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <span style="padding: 8px 16px; background: #f1f5f9; border-radius: 8px; color: #475569; font-size: 14px;">🎥 YouTube Reviews</span>
+                    <span style="padding: 8px 16px; background: #f1f5f9; border-radius: 8px; color: #475569; font-size: 14px;">𝕏 X (Twitter)</span>
+                    <span style="padding: 8px 16px; background: #f1f5f9; border-radius: 8px; color: #475569; font-size: 14px;">📰 Expert Reviews</span>
+                </div>
+            </div>
+
+            <p style="color: #64748b; font-size: 14px; margin-top: 30px; text-align: center;">
                 This email was generated by Review Cruncher. For more information, visit our website.
             </p>
         </div>

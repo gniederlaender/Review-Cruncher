@@ -77,62 +77,6 @@ class OpinionSynthesizer {
     _calculateScorecard(sources) {
         const scorecard = [];
 
-        // Google/Best Buy (star ratings 1-5 mapped to -5 to +5)
-        if (sources.bestbuy?.available && sources.bestbuy.products?.length > 0) {
-            const avgRating = parseFloat(sources.bestbuy.metrics.avgRating);
-            const score = ((avgRating - 3) / 2) * 5; // Map 1-5 to -5 to +5, center at 3
-            scorecard.push({
-                source: 'bestbuy',
-                name: 'Best Buy',
-                score: Math.round(score * 10) / 10,
-                sampleSize: sources.bestbuy.metrics.totalReviews,
-                unit: 'reviews',
-                available: true
-            });
-        } else {
-            scorecard.push({
-                source: 'bestbuy',
-                name: 'Best Buy',
-                score: null,
-                sampleSize: 0,
-                unit: 'reviews',
-                available: false
-            });
-        }
-
-        // Reddit (upvote-based sentiment)
-        if (sources.reddit?.available && sources.reddit.discussions?.length > 0) {
-            const avgScore = sources.reddit.avgScore || 0;
-            const sentiment = sources.reddit.sentiment || 'neutral';
-            let score = 0;
-            // Map sentiment and engagement to score
-            if (sentiment === 'positive') score = 3.5;
-            else if (sentiment === 'very positive') score = 4.5;
-            else if (sentiment === 'negative') score = -3.0;
-            else if (sentiment === 'mixed') score = 1.5;
-            // Adjust by upvote ratio
-            if (avgScore > 100) score += 0.5;
-            else if (avgScore < 10) score -= 0.5;
-
-            scorecard.push({
-                source: 'reddit',
-                name: 'Reddit',
-                score: Math.max(-5, Math.min(5, Math.round(score * 10) / 10)),
-                sampleSize: sources.reddit.discussions.length,
-                unit: 'threads',
-                available: true
-            });
-        } else {
-            scorecard.push({
-                source: 'reddit',
-                name: 'Reddit',
-                score: null,
-                sampleSize: 0,
-                unit: 'threads',
-                available: false
-            });
-        }
-
         // X/Twitter (engagement-weighted sentiment)
         if (sources.twitter?.available && sources.twitter.tweets?.length > 0) {
             const sentiment = sources.twitter.sentiment || 'neutral';
@@ -199,11 +143,11 @@ class OpinionSynthesizer {
             });
         }
 
-        // Google Search (articles - no scoring, just availability)
+        // Expert Reviews (Google Search - articles)
         if (sources.google?.available && sources.google.articles?.length > 0) {
             scorecard.push({
                 source: 'google',
-                name: 'Google Search',
+                name: 'Expert Reviews',
                 score: null, // Articles don't have inherent scores
                 sampleSize: sources.google.articles.length,
                 unit: 'articles',
@@ -212,7 +156,7 @@ class OpinionSynthesizer {
         } else {
             scorecard.push({
                 source: 'google',
-                name: 'Google Search',
+                name: 'Expert Reviews',
                 score: null,
                 sampleSize: 0,
                 unit: 'articles',
@@ -228,19 +172,6 @@ class OpinionSynthesizer {
      */
     _buildPrompt(product, sources, expectations, scorecard) {
         let prompt = `I need a comprehensive analysis of "${product}" based on multiple data sources:\n\n`;
-
-        // Add Reddit data
-        if (sources.reddit?.available && sources.reddit.discussions?.length > 0) {
-            prompt += `**REDDIT DISCUSSIONS (${sources.reddit.discussions.length} posts, ${sources.reddit.totalComments} comments):**\n`;
-            prompt += `- Overall sentiment: ${sources.reddit.sentiment}\n`;
-            prompt += `- Average score: ${sources.reddit.avgScore} upvotes\n`;
-            prompt += `- Active subreddits: ${sources.reddit.subreddits.join(', ')}\n`;
-            prompt += `- Top discussions:\n`;
-            sources.reddit.discussions.slice(0, 3).forEach(d => {
-                prompt += `  • "${d.title}" (${d.score} upvotes, ${d.numComments} comments)\n`;
-            });
-            prompt += '\n';
-        }
 
         // Add YouTube data
         if (sources.youtube?.available && sources.youtube.videos?.length > 0) {
@@ -260,22 +191,6 @@ class OpinionSynthesizer {
             prompt += '\n';
         }
 
-        // Add Best Buy data
-        if (sources.bestbuy?.available && sources.bestbuy.products?.length > 0) {
-            prompt += `**BEST BUY CUSTOMER REVIEWS:**\n`;
-            prompt += `- Products found: ${sources.bestbuy.metrics.productsFound}\n`;
-            prompt += `- Average rating: ${sources.bestbuy.metrics.avgRating}/5.0 stars\n`;
-            prompt += `- Total reviews: ${sources.bestbuy.metrics.totalReviews}\n`;
-            prompt += `- Overall sentiment: ${sources.bestbuy.sentiment}\n`;
-            if (sources.bestbuy.reviews?.length > 0) {
-                prompt += `- Sample customer reviews:\n`;
-                sources.bestbuy.reviews.slice(0, 2).forEach(r => {
-                    prompt += `  • ${r.rating}/5 - "${r.title}" - ${r.comment.slice(0, 100)}...\n`;
-                });
-            }
-            prompt += '\n';
-        }
-
         // Add Twitter/X data
         if (sources.twitter?.available && sources.twitter.tweets?.length > 0) {
             prompt += `**X (TWITTER) SOCIAL OPINIONS (${sources.twitter.tweets.length} tweets):**\n`;
@@ -290,9 +205,9 @@ class OpinionSynthesizer {
             prompt += '\n';
         }
 
-        // Add Google Search data (if available)
+        // Add Google Search data - Always include as "Expert Reviews"
         if (sources.google?.available && sources.google.articles?.length > 0) {
-            prompt += `**EXPERT REVIEWS & ARTICLES:**\n`;
+            prompt += `**EXPERT REVIEWS (Google Search - ${sources.google.articles.length} articles):**\n`;
             sources.google.articles.slice(0, 3).forEach(a => {
                 prompt += `  • "${a.title}" - ${a.snippet}\n`;
             });
@@ -309,11 +224,9 @@ class OpinionSynthesizer {
 
         prompt += `## KEY TAKEAWAYS BY SOURCE\n\n`;
         prompt += `For each available source, provide 2-3 key takeaways:\n\n`;
-        if (sources.reddit?.available) prompt += `**Reddit:**\n- [Key point 1]\n- [Key point 2]\n\n`;
         if (sources.youtube?.available) prompt += `**YouTube:**\n- [Key point 1]\n- [Key point 2]\n\n`;
-        if (sources.bestbuy?.available) prompt += `**Best Buy:**\n- [Key point 1]\n- [Key point 2]\n\n`;
         if (sources.twitter?.available) prompt += `**X/Twitter:**\n- [Key point 1]\n- [Key point 2]\n\n`;
-        if (sources.google?.available) prompt += `**Google Search:**\n- [Key point 1]\n- [Key point 2]\n\n`;
+        if (sources.google?.available) prompt += `**Expert Reviews:**\n- [Key point 1]\n- [Key point 2]\n\n`;
 
         prompt += `## CONSENSUS\n\n`;
         prompt += `List 2-3 points where ALL or MOST sources agree:\n`;
@@ -370,7 +283,7 @@ class OpinionSynthesizer {
             // Parse key takeaways by source
             if (keyTakeawaysMatch) {
                 const takeawaysText = keyTakeawaysMatch[1];
-                const sources = ['Reddit', 'YouTube', 'Best Buy', 'X/Twitter', 'Google Search'];
+                const sources = ['YouTube', 'X/Twitter', 'Expert Reviews'];
 
                 sources.forEach(source => {
                     const sourceRegex = new RegExp(`\\*\\*${source}:\\*\\*\\s*([\\s\\S]*?)(?=\\*\\*[^*]+:\\*\\*|$)`, 'i');
@@ -423,11 +336,9 @@ class OpinionSynthesizer {
      */
     _getSourcesUsed(sources) {
         const used = [];
-        if (sources.reddit?.available) used.push('Reddit');
         if (sources.youtube?.available) used.push('YouTube');
-        if (sources.bestbuy?.available) used.push('Best Buy');
         if (sources.twitter?.available) used.push('X/Twitter');
-        if (sources.google?.available) used.push('Google Search');
+        if (sources.google?.available) used.push('Expert Reviews');
         return used;
     }
 

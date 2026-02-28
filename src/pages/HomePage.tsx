@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import ReactMarkdown from 'react-markdown'
 import { sendProductAndSearchRequest, sendEmail, fetchRecentReviews, ScorecardItem } from '../resources/api-request'
 import SourceCard from '../components/SourceCard'
-import SentimentScorecard from '../components/SentimentScorecard'
-import AnalysisSection from '../components/AnalysisSection'
-import SentimentExpander from '../components/SentimentExpander'
+import ProductSnapshot from '../components/ProductSnapshot'
+import ProductSentiment from '../components/ProductSentiment'
+import FinalSynthesis from '../components/FinalSynthesis'
 import '../styles/HomePage.css'
 
 const HomePage: React.FC = () => {
@@ -135,6 +134,41 @@ const HomePage: React.FC = () => {
     }
 
     /**
+     * Extract product name from markdown text
+     */
+    const extractProductName = (text: string): string => {
+        const match = text.match(/\*\*Product Name\*\*\s*\n*\s*([^\n]+)/i)
+        return match ? match[1].trim() : product
+    }
+
+    /**
+     * Extract price range from markdown text
+     */
+    const extractPriceRange = (text: string): string => {
+        const match = text.match(/\*\*Price Range:\*\*\s*([^\n]+)/i)
+        return match ? match[1].trim() : ''
+    }
+
+    /**
+     * Extract product alternatives from markdown text
+     */
+    const extractAlternatives = (text: string): string[] => {
+        const alternatives: string[] = []
+        const match = text.match(/\*\*Product Alternatives:\*\*\s*\n*([\s\S]*?)(?=\*\*Recommendation:|$)/i)
+
+        if (match) {
+            const altText = match[1]
+            const lines = altText.split('\n').filter(line => line.trim().match(/^\d+\.\s+\*\*/))
+            lines.forEach(line => {
+                // Extract the full alternative text including description
+                const cleaned = line.replace(/^\d+\.\s+/, '').trim()
+                if (cleaned) alternatives.push(cleaned)
+            })
+        }
+        return alternatives
+    }
+
+    /**
      * Extract overall sentiment from markdown text
      */
     const extractOverallSentiment = (text: string): string | null => {
@@ -143,15 +177,28 @@ const HomePage: React.FC = () => {
     }
 
     /**
-     * Remove overall sentiment line from markdown to avoid duplication
+     * Extract recommendation text from markdown
      */
-    const removeOverallSentimentLine = (text: string): string => {
-        return text.replace(/\*\*Overall Sentiment:\*\*[^\n]+\n*/i, '')
+    const extractRecommendation = (text: string): string => {
+        const match = text.match(/\*\*Recommendation:\*\*\s*([\s\S]*?)(?=\*\*Confidence Level:|$)/i)
+        return match ? match[1].trim() : ''
     }
 
-    // Extract sentiment and prepare modified response
+    /**
+     * Extract confidence level from markdown
+     */
+    const extractConfidenceLevel = (text: string): string => {
+        const match = text.match(/\*\*Confidence Level:\*\*\s*([^\n]+)/i)
+        return match ? match[1].trim() : ''
+    }
+
+    // Extract all parts from finalResponse
+    const productName = extractProductName(finalResponse)
+    const priceRange = extractPriceRange(finalResponse)
+    const alternatives = extractAlternatives(finalResponse)
     const overallSentiment = extractOverallSentiment(finalResponse)
-    const modifiedResponse = overallSentiment ? removeOverallSentimentLine(finalResponse) : finalResponse
+    const recommendation = extractRecommendation(finalResponse)
+    const confidenceLevel = extractConfidenceLevel(finalResponse)
 
     return (
         <div className="o-page-container">
@@ -261,64 +308,53 @@ const HomePage: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Section 1: Sentiment Scorecard */}
-                        {scorecard.length > 0 && (
-                            <SentimentScorecard scorecard={scorecard} />
-                        )}
-
-                        {/* Section 2 & 3: Key Takeaways, Consensus, Divergence */}
-                        <AnalysisSection
-                            keyTakeaways={keyTakeaways}
-                            consensus={consensus}
-                            divergence={divergence}
+                        {/* Section 1: Product Snapshot */}
+                        <ProductSnapshot
+                            productName={productName}
+                            priceRange={priceRange}
+                            alternatives={alternatives}
                         />
 
-                        {/* Section 4: Final Synthesis */}
-                        <div className="o-response-container">
-                            <h3>📋 Final Synthesis</h3>
-                            {overallSentiment && scorecard.length > 0 && (
-                                <SentimentExpander
-                                    overallSentiment={overallSentiment}
-                                    scorecard={scorecard}
-                                />
-                            )}
-                            <ReactMarkdown
-                                components={{
-                                    a: (props) => (
-                                        <a href={props.href} target="_blank" rel="noopener noreferrer">{props.children}</a>
-                                    )
-                                }}
-                            >{modifiedResponse}</ReactMarkdown>
-                        </div>
+                        {/* Section 2: Product Sentiment */}
+                        {overallSentiment && (
+                            <ProductSentiment
+                                overallSentiment={overallSentiment}
+                                scorecard={scorecard.filter(s => s.available)}
+                                consensus={consensus}
+                                divergence={divergence}
+                                keyTakeaways={keyTakeaways}
+                            />
+                        )}
+
+                        {/* Section 3: Final Synthesis */}
+                        {recommendation && (
+                            <FinalSynthesis
+                                recommendation={recommendation}
+                                confidenceLevel={confidenceLevel}
+                            />
+                        )}
+                        {/* Section 4: Data Sources */}
                         {sources && (
-                            <div className="o-sources-container">
-                                <h3>Data Sources</h3>
-                                <div className="o-sources-grid">
-                                    <SourceCard
-                                        source={sources.reddit}
-                                        icon="🗨️"
-                                        title="Reddit Discussions"
-                                    />
-                                    <SourceCard
-                                        source={sources.youtube}
-                                        icon="🎥"
-                                        title="YouTube Reviews"
-                                    />
-                                    <SourceCard
-                                        source={sources.bestbuy}
-                                        icon="⭐"
-                                        title="Best Buy Reviews"
-                                    />
-                                    <SourceCard
-                                        source={sources.twitter}
-                                        icon="𝕏"
-                                        title="X (Twitter) Opinions"
-                                    />
-                                    <SourceCard
-                                        source={sources.google}
-                                        icon="📰"
-                                        title="Expert Reviews"
-                                    />
+                            <div className="o-section o-data-sources">
+                                <h3 className="o-section-title">📚 Data Sources</h3>
+                                <div className="o-section-content">
+                                    <div className="o-sources-grid">
+                                        <SourceCard
+                                            source={sources.youtube}
+                                            icon="🎥"
+                                            title="YouTube Reviews"
+                                        />
+                                        <SourceCard
+                                            source={sources.twitter}
+                                            icon="𝕏"
+                                            title="X (Twitter) Opinions"
+                                        />
+                                        <SourceCard
+                                            source={sources.google}
+                                            icon="📰"
+                                            title="Expert Reviews"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         )}

@@ -1,0 +1,77 @@
+.o-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+}
+
+.o-section-title {
+    margin: 0 0 1.5rem 0;
+    color: #1e293b;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.o-section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.o-product-snapshot .o-snapshot-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.o-snapshot-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.o-snapshot-value {
+    font-size: 1.125rem;
+    color: #1e293b;
+    line-height: 1.6;
+}
+
+.o-product-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.o-snapshot-alternatives {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.o-alternative-item {
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border-left: 3px solid #3b82f6;
+    border-radius: 4px;
+    font-size: 1rem;
+    color: #334155;
+    line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+    .o-section {
+        padding: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .o-section-title {
+        font-size: 1.1rem;
+    }
+
+    .o-product-name {
+        font-size: 1.25rem;
+    }
+}

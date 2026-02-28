@@ -1,0 +1,72 @@
+.o-product-sentiment .o-area {
+    margin-top: 1.5rem;
+}
+
+.o-product-sentiment .o-area:first-child {
+    margin-top: 0;
+}
+
+.o-area-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.o-area-content {
+    color: #334155;
+    line-height: 1.7;
+}
+
+.o-consensus-list,
+.o-divergence-list,
+.o-takeaway-list {
+    margin: 0;
+    padding-left: 1.5rem;
+    list-style-type: disc;
+}
+
+.o-consensus-list li,
+.o-divergence-list li {
+    margin-bottom: 0.75rem;
+    color: #1e293b;
+}
+
+.o-divergence-list li {
+    color: #92400e;
+}
+
+.o-takeaway-source {
+    margin-bottom: 1.5rem;
+}
+
+.o-takeaway-source:last-child {
+    margin-bottom: 0;
+}
+
+.o-takeaway-source-name {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.o-takeaway-list {
+    margin-top: 0.5rem;
+}
+
+.o-takeaway-list li {
+    margin-bottom: 0.5rem;
+    color: #475569;
+}
+
+@media (max-width: 640px) {
+    .o-area-title {
+        font-size: 1rem;
+    }
+
+    .o-consensus-list,
+    .o-divergence-list,
+    .o-takeaway-list {
+        padding-left: 1.25rem;
+    }
+}
