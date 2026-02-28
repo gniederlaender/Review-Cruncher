@@ -30,3 +30,6 @@ feedback.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log\*
+
+# Ignore all nested node_modules
+**/node_modules

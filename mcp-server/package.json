@@ -1,0 +1,44 @@
+{
+  "name": "@reviewcruncher/mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for ReviewCruncher - Multi-source product review analysis for AI assistants",
+  "main": "dist/index.js",
+  "bin": {
+    "reviewcruncher-mcp": "./dist/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "reviewcruncher",
+    "product-reviews",
+    "ai-tools",
+    "claude",
+    "anthropic"
+  ],
+  "author": "ReviewCruncher",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gniederlaender/Review-Cruncher"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "axios": "^1.6.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.33",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
