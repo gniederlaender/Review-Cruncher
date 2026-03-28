@@ -1,0 +1,95 @@
+Generating ReviewCruncher analytics for 2026-03-24...
+Generating ReviewCruncher analytics for 2026-03-24...
+
+GoAccess - version 1.8.1 - Apr 14 2024 22:34:39
+Config file: /etc/goaccess/goaccess.conf
+
+Fatal error has occurred
+Error occurred at: src/websocket.c - ws_socket - 2794
+Unable to set bind: Address already in use.
+
+ [PARSING /var/log/apache2/reviewcruncher.com_access.log] {113} @ {0/s}Analytics generated in /opt/Review-Cruncher/analytics/
+
+[2KWebSocket server ready to accept new client connections
+Generating ReviewCruncher analytics for 2026-03-25...
+Generating ReviewCruncher analytics for 2026-03-25...
+ [PARSING /var/log/apache2/reviewcruncher.com_access.log] {25} @ {0/s}
+GoAccess - version 1.8.1 - Apr 14 2024 22:34:39
+Config file: /etc/goaccess/goaccess.conf
+
+Fatal error has occurred
+Error occurred at: src/websocket.c - ws_socket - 2794
+Unable to set bind: Address already in use.
+
+
+GoAccess - version 1.8.1 - Apr 14 2024 22:34:39
+Config file: /etc/goaccess/goaccess.conf
+
+Fatal error has occurred
+Error occurred at: src/websocket.c - ws_socket - 2794
+Unable to set bind: Address already in use.
+
+
+Analytics generated in /opt/Review-Cruncher/analytics/
+Analytics generated in /opt/Review-Cruncher/analytics/
+Generating ReviewCruncher analytics for 2026-03-26...
+Generating ReviewCruncher analytics for 2026-03-26...
+
+GoAccess - version 1.8.1 - Apr 14 2024 22:34:39
+Config file: /etc/goaccess/goaccess.conf
+
+Fatal error has occurred
+Error occurred at: src/websocket.c - ws_socket - 2794
+Unable to set bind: Address already in use.
+
+
+GoAccess - version 1.8.1 - Apr 14 2024 22:34:39
+Config file: /etc/goaccess/goaccess.conf
+
+Fatal error has occurred
+Error occurred at: src/websocket.c - ws_socket - 2794
+Unable to set bind: Address already in use.
+
+Analytics generated in /opt/Review-Cruncher/analytics/
+Analytics generated in /opt/Review-Cruncher/analytics/
+Generating ReviewCruncher analytics for 2026-03-27...
+Generating ReviewCruncher analytics for 2026-03-27...
+
+GoAccess - version 1.8.1 - Apr 14 2024 22:34:39
+Config file: /etc/goaccess/goaccess.conf
+
+Fatal error has occurred
+Error occurred at: src/websocket.c - ws_socket - 2794
+Unable to set bind: Address already in use.
+
+
+GoAccess - version 1.8.1 - Apr 14 2024 22:34:39
+Config file: /etc/goaccess/goaccess.conf
+
+Fatal error has occurred
+Error occurred at: src/websocket.c - ws_socket - 2794
+Unable to set bind: Address already in use.
+
+
+Analytics generated in /opt/Review-Cruncher/analytics/
+Analytics generated in /opt/Review-Cruncher/analytics/
+Generating ReviewCruncher analytics for 2026-03-28...
+Generating ReviewCruncher analytics for 2026-03-28...
+
+GoAccess - version 1.8.1 - Apr 14 2024 22:34:39
+Config file: /etc/goaccess/goaccess.conf
+
+Fatal error has occurred
+Error occurred at: src/websocket.c - ws_socket - 2794
+Unable to set bind: Address already in use.
+
+
+GoAccess - version 1.8.1 - Apr 14 2024 22:34:39
+Config file: /etc/goaccess/goaccess.conf
+
+Fatal error has occurred
+Error occurred at: src/websocket.c - ws_socket - 2794
+Unable to set bind: Address already in use.
+
+Analytics generated in /opt/Review-Cruncher/analytics/
+Analytics generated in /opt/Review-Cruncher/analytics/

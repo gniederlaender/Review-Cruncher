@@ -1,0 +1,17 @@
+=== ReviewCruncher Traffic Summary - 2026-03-28 ===
+Total requests today: 76
+Total requests today: 76
+Unique IPs today: 43
+Top 5 IPs:
+Unique IPs today: 43
+Top 5 IPs:
+      9 35.216.201.9
+      7 165.154.206.35
+      5 207.90.244.25
+      4 65.49.1.222
+      4 46.105.40.140
+      9 35.216.201.9
+      7 165.154.206.35
+      5 207.90.244.25
+      4 65.49.1.222
+      4 46.105.40.140

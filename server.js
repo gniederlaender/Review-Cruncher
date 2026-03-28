@@ -13,6 +13,7 @@ const YouTubeSource = require('./modules/sources/youtube');
 const BestBuySource = require('./modules/sources/bestbuy');
 const TwitterSource = require('./modules/sources/twitter');
 const OpinionSynthesizer = require('./modules/synthesizer');
+const URLExtractor = require('./modules/url-extractor');
 
 const app = express();
 const port = process.env.SERVERPORT || 5000;
@@ -53,6 +54,7 @@ const twitterSource = new TwitterSource(
     process.env.TWITTER_CT0
 );
 const synthesizer = new OpinionSynthesizer(OPENAI_API_KEY);
+const urlExtractor = new URLExtractor();
 
 // Create a transporter object using easyname.com SMTP
 const transporter = nodemailer.createTransport({
@@ -440,6 +442,43 @@ app.post('/api/search', async (req, res) => {
     } catch (error) {
         console.error('Google Search Error:', error.response?.data || error.message);
         res.status(500).json({ error: 'Google Search failed' });
+    }
+});
+
+// URL extraction endpoint
+app.post('/api/extract-product-from-url', async (req, res) => {
+    try {
+        const { url } = req.body;
+
+        if (!url) {
+            return res.status(400).json({ error: 'URL is required' });
+        }
+
+        // Check if input is actually a URL
+        if (!urlExtractor.isURL(url)) {
+            return res.status(400).json({ error: 'Invalid URL format' });
+        }
+
+        // Extract product name from URL
+        const result = await urlExtractor.extractProductName(url);
+
+        if (result.success) {
+            res.json({
+                success: true,
+                productName: result.productName
+            });
+        } else {
+            res.json({
+                success: false,
+                error: result.error
+            });
+        }
+    } catch (error) {
+        console.error('URL Extraction Error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to extract product name from URL. Please enter the product name manually.'
+        });
     }
 });
 

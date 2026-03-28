@@ -36,6 +36,7 @@ const sendSearchURL = `${baseURL}/search`
 const sendCombinedURL = `${baseURL}/combined`
 const sendEmailURL = `${baseURL}/send-email`
 const recentReviewsURL = `${baseURL}/recent-reviews`
+const extractProductURL = `${baseURL}/extract-product-from-url`
 
 export const sendCompletionRequest = async (userToken: string, request: string, selectedModel: string, email: string): Promise<{ error?: any; response?: ResponseObject }> => {
     try {
@@ -137,5 +138,20 @@ export const fetchRecentReviews = async (): Promise<{ error?: any; reviews?: any
     } catch (error: any) {
         console.error('Error fetching recent reviews:', error);
         return { error: error.response?.data || error.message };
+    }
+}
+
+export const extractProductFromURL = async (url: string): Promise<{ success: boolean; productName?: string; error?: string }> => {
+    try {
+        const response = await CustomAxios.post(extractProductURL, { url }, {
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+        });
+        return response.data;
+    } catch (error: any) {
+        console.error('URL extraction error:', error);
+        return {
+            success: false,
+            error: error.response?.data?.error || 'Failed to extract product name from URL'
+        };
     }
 }

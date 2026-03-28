@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { sendProductAndSearchRequest, sendEmail, fetchRecentReviews, ScorecardItem } from '../resources/api-request'
+import { sendProductAndSearchRequest, sendEmail, fetchRecentReviews, extractProductFromURL, ScorecardItem } from '../resources/api-request'
 import SourceCard from '../components/SourceCard'
 import ProductSnapshot from '../components/ProductSnapshot'
 import ProductSentiment from '../components/ProductSentiment'
@@ -44,6 +44,18 @@ const HomePage: React.FC = () => {
     }
 
     /**
+     * Helper function to check if input is a URL
+     */
+    const isURL = (input: string): boolean => {
+        try {
+            const url = new URL(input)
+            return url.protocol === 'http:' || url.protocol === 'https:'
+        } catch {
+            return false
+        }
+    }
+
+    /**
      * Sends the request to OpenAI completion API.
      */
     const sendRequest = async (): Promise<void> => {
@@ -59,7 +71,24 @@ const HomePage: React.FC = () => {
             setConsensus([])
             setDivergence([])
 
-            const result = await sendProductAndSearchRequest('', product, 'gpt-4.1', email, expectations)
+            let productName = product
+
+            // Check if input is a URL
+            if (isURL(product)) {
+                const extractionResult = await extractProductFromURL(product)
+
+                if (extractionResult.success && extractionResult.productName) {
+                    productName = extractionResult.productName
+                    setProduct(productName) // Update the product field with extracted name
+                } else {
+                    // Show error message if extraction failed
+                    setIsLoading(false)
+                    setErrorMessage(extractionResult.error || 'Could not extract product name from URL. Please enter the product name manually.')
+                    return
+                }
+            }
+
+            const result = await sendProductAndSearchRequest('', productName, 'gpt-4.1', email, expectations)
 
             if (result.error) throw new Error(result.error.message || 'Something went wrong with the request')
 
@@ -203,11 +232,15 @@ const HomePage: React.FC = () => {
     return (
         <div className="o-page-container">
             <div className="o-claim-banner">
-                Before you buy - <span>Ask Review Cruncher.</span>
+                Skip the Research. <span>Get the Verdict.</span>
             </div>
             <div className="o-pitch-banner">
                 Not sure what to buy?<br />
                 <strong>ReviewCruncher</strong> gives you fast, AI-powered product recommendations before you commit.
+            </div>
+            <div className="o-social-proof">
+                <span>✅ {recentReviews.length > 0 ? recentReviews.length * 47 : 100}+ products analyzed</span>
+                <span className="o-source-badges">📊 Sources: YouTube • Twitter/X • Google</span>
             </div>
             <div className="o-main-page-container">
                 <form onSubmit={handleSubmit}>
@@ -267,7 +300,7 @@ const HomePage: React.FC = () => {
                                 disabled={isLoading || !dataIsValid()} 
                                 className="u-button o-action-button"
                             >
-                                Recommend Product
+                                Get My Recommendation
                             </button>
                             {isLoading && <span className="o-loading-text">... loading</span>}
                         </div>

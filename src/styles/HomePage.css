@@ -402,6 +402,35 @@ body {
     }
 }
 
+/* Social proof banner */
+.o-social-proof {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    margin: 0 auto 20px auto;
+    max-width: 600px;
+    padding: 10px 16px;
+    background: #fefce8;
+    border: 1px solid #fef08a;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #854d0e;
+}
+.o-social-proof span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+@media (max-width: 600px) {
+    .o-social-proof {
+        flex-direction: column;
+        gap: 8px;
+        font-size: 0.9rem;
+        padding: 8px 12px;
+    }
+}
+
 /* Multi-source display styles */
 .o-sources-badge {
     padding: 12px 16px;
