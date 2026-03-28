@@ -3,7 +3,7 @@ const axios = require('axios');
 
 class URLExtractor {
     constructor() {
-        this.timeout = 5000; // 5 seconds as per spec
+        this.timeout = 10000; // 10 seconds for slow sites like Amazon
     }
 
     /**
@@ -65,6 +65,23 @@ class URLExtractor {
     }
 
     /**
+     * Decodes common HTML entities
+     * @param {string} text - Text with HTML entities
+     * @returns {string} - Decoded text
+     */
+    decodeHtmlEntities(text) {
+        return text
+            .replace(/&quot;/g, '"')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&#39;/g, "'")
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&#x27;/g, "'")
+            .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec));
+    }
+
+    /**
      * Extracts product name from OpenGraph meta tags
      * @param {string} html - The HTML content to parse
      * @returns {string|null} - Extracted product name or null
@@ -76,7 +93,7 @@ class URLExtractor {
             const match = html.match(ogTitleRegex);
 
             if (match && match[1]) {
-                return match[1].trim();
+                return this.decodeHtmlEntities(match[1].trim());
             }
 
             // Alternative: content before property
@@ -84,10 +101,44 @@ class URLExtractor {
             const match2 = html.match(ogTitleRegex2);
 
             if (match2 && match2[1]) {
-                return match2[1].trim();
+                return this.decodeHtmlEntities(match2[1].trim());
             }
         } catch (error) {
             console.error('Error extracting from OpenGraph:', error.message);
+        }
+        return null;
+    }
+
+    /**
+     * Extracts product name from HTML title tag
+     * @param {string} html - The HTML content to parse
+     * @returns {string|null} - Extracted product name or null
+     */
+    extractFromPageTitle(html) {
+        try {
+            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+            if (titleMatch && titleMatch[1]) {
+                let title = this.decodeHtmlEntities(titleMatch[1].trim());
+
+                // Remove common suffixes like " - Amazon.com", " | Store Name", " - Shop"
+                title = title.replace(/\s*[-|–—]\s*(Amazon\.com|Amazon|eBay|Walmart|Best Buy|Target|JB Hi-Fi|Shop|Store|Buy|Online).*$/i, '');
+
+                // Remove "Amazon.com : " prefix
+                title = title.replace(/^Amazon\.com\s*:\s*/i, '');
+
+                // Remove Amazon category suffixes like ": Health & Household", ": Electronics", etc.
+                title = title.replace(/\s*:\s*(Health & Household|Electronics|Home & Kitchen|Sports & Outdoors|Beauty & Personal Care|Clothing|Shoes & Jewelry|Tools & Home Improvement|Automotive|Books|Toys & Games|Office Products|Pet Supplies|Baby|Industrial & Scientific|Grocery & Gourmet Food|Arts, Crafts & Sewing|Patio, Lawn & Garden|Cell Phones & Accessories|Computers & Accessories|Musical Instruments|Movies & TV|Software|Video Games|Appliances)$/i, '');
+
+                // Clean up multiple spaces
+                title = title.replace(/\s+/g, ' ').trim();
+
+                // Only return if title looks like a product name (not too short, not generic)
+                if (title.length > 5 && !title.toLowerCase().includes('page not found') && !title.toLowerCase().includes('error')) {
+                    return title;
+                }
+            }
+        } catch (error) {
+            console.error('Error extracting from page title:', error.message);
         }
         return null;
     }
@@ -174,7 +225,12 @@ class URLExtractor {
             const response = await axios.get(urlString, {
                 timeout: this.timeout,
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
                 },
                 maxRedirects: 5,
                 validateStatus: (status) => status >= 200 && status < 400
@@ -196,7 +252,14 @@ class URLExtractor {
                 return { success: true, productName };
             }
 
-            // Strategy 3: Try URL path analysis
+            // Strategy 3: Try Page Title (works well for Amazon)
+            productName = this.extractFromPageTitle(html);
+            if (productName) {
+                console.log('Product name extracted from page title:', productName);
+                return { success: true, productName };
+            }
+
+            // Strategy 4: Try URL path analysis
             productName = this.extractFromURLPath(urlString);
             if (productName) {
                 console.log('Product name extracted from URL path:', productName);
