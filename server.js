@@ -485,10 +485,29 @@ app.post('/api/extract-product-from-url', async (req, res) => {
 // Combined endpoint for multi-source opinion synthesis
 app.post('/api/combined', async (req, res) => {
     try {
-        const { product, email, expectations } = req.body;
+        let { product, email, expectations } = req.body;
 
         if (!product || !email) {
             return res.status(400).json({ error: 'Product and email are required' });
+        }
+
+        // Server-side fallback: If product is a URL, extract the product name
+        const isUrl = product.startsWith('http://') || product.startsWith('https://');
+        if (isUrl) {
+            console.log(`Received URL, extracting product name: ${product}`);
+            try {
+                const extractionResult = await urlExtractor.extractProductName(product);
+                if (extractionResult.success && extractionResult.productName) {
+                    console.log(`Extracted product name: ${extractionResult.productName}`);
+                    product = extractionResult.productName;
+                } else {
+                    console.warn(`Could not extract product name from URL: ${product}`);
+                    // Continue with URL as fallback (not ideal, but better than failing)
+                }
+            } catch (extractError) {
+                console.error(`URL extraction error: ${extractError.message}`);
+                // Continue with URL as fallback
+            }
         }
 
         console.log(`Processing multi-source analysis for: ${product}`);
